@@ -3,9 +3,9 @@ version: "3.9"
 services:
   eadkp-dev:
     build: 
-      context: .
-      dockerfile: dockerfile
-    image: nraddi1:latest # N.R.A.D.D.I.1. = Numworks Rust Application Development Docker Image v1
+      context: https://github.com/Oignontom8283/eadkp.git#dev
+      dockerfile: template/nraddi.dockerfile
+    image: nraddi:latest
     container_name: {{snake_case_name}}
     working_dir: /workspace/{{snake_case_name}}
     volumes:
