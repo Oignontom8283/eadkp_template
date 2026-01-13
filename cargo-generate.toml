@@ -1,2 +1,3 @@
 [template]
 description = "A Rust template for easily starting NumWorks app development using the EADKP library"
+exclude = ["assets/*"]
