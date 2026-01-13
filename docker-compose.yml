@@ -6,10 +6,10 @@ services:
       context: https://github.com/Oignontom8283/eadkp.git#dev
       dockerfile: templates/nraddi.dockerfile
     image: nraddi:latest
-    container_name: {{snake_case}}
-    working_dir: /workspace/{{snake_case}}
+    container_name: {{project-name}}
+    working_dir: /workspace/{{project-name}}
     volumes:
-      - ./:/workspace/{{snake_case}}
+      - ./:/workspace/{{project-name}}
       - /tmp/.X11-unix:/tmp/.X11-unix
       # Mount the entire USB bus to allow hotplug support
       - /dev/bus/usb:/dev/bus/usb

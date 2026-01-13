@@ -1,5 +1,5 @@
 [package]
-name = "{{snake_case}}"
+name = "{{project-name}}"
 version = "0.1.0"
 edition = "2024"
 
@@ -8,7 +8,7 @@ path = "src/main.rs"
 bench = false
 test = false
 crate-type = ["rlib", "cdylib"]
-name = "{{snake_case}}"
+name = "{{project-name}}"
 
 [[target]]
 name = "device"
