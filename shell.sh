@@ -3,4 +3,4 @@
 # Allow local connections to the X server
 xhost +local:docker
 
-docker exec -it {{snake_case_name}} bash
+docker exec -it {{project-name | snake_case}} bash
