@@ -20,8 +20,8 @@ export:
     just build
     rm -rf {{out_dir}} 2>/dev/null
     mkdir -p {{out_dir}}
-    if mv target/thumbv7em-none-eabihf/release/target/device {{out_dir}}{{project_name}}.nwa; then \
-        echo -e "\n\n\033[1;92mEadkp example app build successfully!\n\n-> $(realpath {{out_dir}}/{{project_name}}.nwa)\033[0m\n"
+    if mv target/thumbv7em-none-eabihf/release/examples/device {{out_dir}}{{project_name}}.nwa; then \
+        echo -e "\n\n\033[1;92m{{project_name}} build successfully!\n\n-> $(realpath {{out_dir}}{{project_name}}.nwa)\033[0m\n"; \
     else \
         echo -e "\n\n\033[1;31mError: Build failed. No .nwa file found.\033[0m\n"; \
     fi
