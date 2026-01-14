@@ -10,14 +10,14 @@ test = false
 crate-type = ["rlib", "cdylib"]
 name = "{{project-name}}"
 
-[[target]]
+[[example]]
 name = "device"
 path = "src/main.rs"
 test = false
 doctest = false
 bench = false
 
-[[target]]
+[[example]]
 name = "simulator"
 path = "src/main.rs"
 test = false

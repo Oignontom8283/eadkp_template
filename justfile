@@ -5,16 +5,16 @@ out_dir := "build/"
 simulator_dir := "epsilon_simulator/"
 
 build:
-    cargo +nightly build --release --target device --target=thumbv7em-none-eabihf
+    cargo +nightly build --release --example device --example=thumbv7em-none-eabihf
 
 build_simulator:
-    cargo +nightly build --release --target simulator
+    cargo +nightly build --release --example simulator
 
 send:
-    cargo +nightly run --release --target device --target=thumbv7em-none-eabihf
+    cargo +nightly run --release --example device --example=thumbv7em-none-eabihf
 
 check:
-    cargo +nightly build --release --target device --target=thumbv7em-none-eabihf
+    cargo +nightly build --release --example device --example=thumbv7em-none-eabihf
 
 export:
     just build
