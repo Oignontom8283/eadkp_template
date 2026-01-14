@@ -5,6 +5,7 @@ out_dir := "build/"
 simulator_dir := "epsilon_simulator/"
 
 build:
+    just target
     cargo +nightly build --release --example device --target=thumbv7em-none-eabihf
 
 build_simulator:
