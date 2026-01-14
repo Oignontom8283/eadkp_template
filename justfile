@@ -64,3 +64,6 @@ clear:
 [confirm("This will update all dependencies to their latest versions. Do you want to continue ?")]
 update:
     cargo +nightly update
+
+target:
+    rustup target add thumbv7em-none-eabihf --toolchain nightly
