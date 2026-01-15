@@ -33,6 +33,7 @@ run_nwb:
 
 [linux]
 run_nwb:
+    echo -e "\033[1;95mRunning simulator... (if it freezes, kill it with 'pkill epsilon.bin')\033[0m"
     ./epsilon_simulator/output/release/simulator/linux/epsilon.bin --nwb ./target/release/examples/libsimulator.so & # Run in background to free up terminal. If simulator freezes, kill it with `pkill epsilon.bin`.
 
 sim jobs="1":
