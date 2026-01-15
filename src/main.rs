@@ -11,7 +11,7 @@ and displaying "Hello, world!" on the screen.
 extern crate eadkp;
 
 // Setup the NWA environment.
-eadk_setup!(name = "Eadkp example");
+eadk_setup!(name = "Eadkp template");
 
 #[unsafe(no_mangle)]
 pub fn main() -> isize {
