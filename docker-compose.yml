@@ -4,7 +4,7 @@ services:
   eadkp-dev:
     build: 
       context: https://github.com/Oignontom8283/eadkp.git#dev
-      dockerfile: templates/nraddi.dockerfile
+      dockerfile: dockerfile
     image: nraddi:latest
     container_name: {{project-name}}
     working_dir: /workspace/{{project-name}}
