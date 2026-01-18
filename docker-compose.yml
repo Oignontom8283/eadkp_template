@@ -26,6 +26,6 @@ services:
       - 'c 166:* rmw'   # ttyACM devices (kernel-dependent / not always required)
       - 'c 204:* rmw'   # ttyAMA or alternatives (kernel-dependent)
 
-# Ne fonctionne que sous linux hôte (ou via WSL avec X serveur pour windows) avec X11.
-# Wayland n'est pas supporté pour l'instant.
-# Pour MacOS, il faudrait probablement utiliser un serveur X11 externe (XQuartz) et monter le socket adéquat. (non testé)
+# Only works on Linux hosts (or via WSL with an X server for Windows) using X11.
+# Wayland is not supported at the moment.
+# For macOS, you would probably need to use an external X11 server (XQuartz) and mount the appropriate socket. (not tested)
