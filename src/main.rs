@@ -10,10 +10,6 @@ and displaying "Hello, world!" on the screen.
 #[macro_use]
 extern crate eadkp;
 
-extern "C" {
-    fn calculer_somme(a: i32, b: i32) -> i32;
-}
-
 // Setup the NWA environment.
 eadk_setup!(name = "Eadkp template");
 
@@ -22,6 +18,9 @@ pub fn main() -> isize {
 
     // Initialize the heap allocator
     _eadk_init_heap();
+
+    // Load image
+    let main_image = eadkp::Image::from_raw(eadkp::include_image!("bread.png")).expect("Failed to load main image");
 
     // Initial keyboard state
     let mut prev = eadkp::input::KeyboardState::scan();
@@ -44,14 +43,9 @@ pub fn main() -> isize {
             eadkp::COLOR_WHITE
         );
 
-        eadkp::display::draw_string(
-            &format!("2 + 3 = {}", unsafe { calculer_somme(2, 3) }),
-            eadkp::Point { x: 10, y: 30 },
-            true,
-            eadkp::COLOR_BLACK,
-            eadkp::COLOR_WHITE
-        )
-
+        // Draw the loaded image at position (50, 50)
+        eadkp::display::push_image(&main_image, eadkp::Point { x: 50, y: 50 });
+        
         // Update previous keyboard state
         prev = now;
     }
