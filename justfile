@@ -67,5 +67,11 @@ clear:
 update:
     cargo +nightly update
 
-target:
+configure:
+    rustup default nightly
+    cargo install just
+    rustup toolchain install nightly
     rustup target add thumbv7em-none-eabihf --toolchain nightly
+    
+target:
+    just configure
