@@ -10,6 +10,10 @@ and displaying "Hello, world!" on the screen.
 #[macro_use]
 extern crate eadkp;
 
+extern "C" {
+    fn calculer_somme(a: i32, b: i32) -> i32;
+}
+
 // Setup the NWA environment.
 eadk_setup!(name = "Eadkp template");
 
@@ -39,6 +43,14 @@ pub fn main() -> isize {
             eadkp::COLOR_BLACK,
             eadkp::COLOR_WHITE
         );
+
+        eadkp::display::draw_string(
+            &format!("2 + 3 = {}", unsafe { calculer_somme(2, 3) }),
+            eadkp::Point { x: 10, y: 30 },
+            true,
+            eadkp::COLOR_BLACK,
+            eadkp::COLOR_WHITE
+        )
 
         // Update previous keyboard state
         prev = now;
