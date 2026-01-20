@@ -30,7 +30,7 @@ pub fn main() -> isize {
 
         // DISPLAY EADKP LOGO
 
-        let height_center = (eadkp::SCREEN_RECT.height as f32 / 2.5) as u16;
+        let height_center = (eadkp::SCREEN_RECT.height as f32 / 2.9) as u16;
 
         let image_position = eadkp::Point {
             x: eadkp::SCREEN_RECT.width / 2 - eadkp_logo.width / 2,
