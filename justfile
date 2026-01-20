@@ -68,4 +68,4 @@ update:
     cargo +nightly update
     
 target:
-    just config
+    rustup target add thumbv7em-none-eabihf --toolchain nightly
