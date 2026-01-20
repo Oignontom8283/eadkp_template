@@ -23,16 +23,8 @@ pub fn main() -> isize {
     // IMPORTANT: When you add an image, use `just clean` before recompiling so that the Rust compiler takes the new image into account.
     let eadkp_logo = eadkp::Image::from_raw(eadkp::include_image!("eadkp_logo_64_max.png")).expect("Failed to load eadkp logo image");
 
-    // Initial keyboard state
-    let mut prev = eadkp::input::KeyboardState::scan();
-
-    loop {
-        let now = eadkp::input::KeyboardState::scan(); // Scan the current keyboard state
-        let just = now.get_just_pressed(prev); // Get keys that were just pressed
-        if just.key_down(eadkp::input::Key::Back) { break 0; }; // Exit if Back key is pressed
-
-        // Clear the screen to white
-        eadkp::display::wait_for_vblank(); // Wait for VBlank before updating the display
+    // Drawing closure. Called before looping.
+    let first_drawing = || {
         eadkp::display::push_rect_uniform(eadkp::SCREEN_RECT, eadkp::COLOR_WHITE); // Fill the entire screen with white
 
 
@@ -66,7 +58,46 @@ pub fn main() -> isize {
             eadkp::COLOR_BLACK,
             eadkp::COLOR_WHITE
         );
+
+
+        // DISPLAY SUBTITLE TEXT
+
+        let subtitle_text = "A simple template to start a new project.";
+        let subtitle_text_len = (subtitle_text.len() * eadkp::SMALL_FONT.width as usize) as u16;
+
+        let subtitle_position = eadkp::Point {
+            x: eadkp::SCREEN_RECT.width / 2 - (subtitle_text_len / 2),
+            y: height_center + (eadkp_logo.height / 2) + 40 - (eadkp::SMALL_FONT.height / 2),
+        };
         
+        eadkp::display::draw_string(
+            subtitle_text,
+            subtitle_position,
+            false,
+            eadkp::COLOR_BLACK,
+            eadkp::COLOR_WHITE
+        );
+    };
+
+    let drawing = || {
+        // Currently empty, but can be used for dynamic drawing in the main loop
+    };
+    
+
+    // Initial keyboard state
+    let mut prev = eadkp::input::KeyboardState::scan();
+
+    first_drawing(); // Initial drawing
+
+    loop {
+        let now = eadkp::input::KeyboardState::scan(); // Scan the current keyboard state
+        let just = now.get_just_pressed(prev); // Get keys that were just pressed
+        if just.key_down(eadkp::input::Key::Back) { break 0; }; // Exit if Back key is pressed
+
+        // Clear the screen to white
+        eadkp::display::wait_for_vblank(); // Wait for VBlank before updating the display
+
+        drawing(); // Call the drawing closures
 
         // Update previous keyboard state
         prev = now;
