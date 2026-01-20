@@ -66,13 +66,6 @@ clear:
 [confirm("This will update all dependencies to their latest versions. Do you want to continue ?")]
 update:
     cargo +nightly update
-
-config:
-    #rustup uninstall nightly 2>/dev/null || true
-    rustup toolchain install nightly
-    rustup default nightly
-    cargo install just
-    rustup target add thumbv7em-none-eabihf --toolchain nightly
     
 target:
     just config
