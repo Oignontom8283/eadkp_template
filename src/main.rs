@@ -77,6 +77,25 @@ pub fn main() -> isize {
             eadkp::COLOR_BLACK,
             eadkp::COLOR_WHITE
         );
+
+
+        // DISPLAY FOOTER TEXT
+
+        let footer_text = "Press BACK to exit.";
+        let footer_text_padding = 5;
+
+        let footer_position = eadkp::Point {
+            x: footer_text_padding,
+            y: eadkp::SCREEN_RECT.height - eadkp::SMALL_FONT.height - footer_text_padding,
+        };
+
+        eadkp::display::draw_string(
+            footer_text,
+            footer_position,
+            false,
+            eadkp::Color::from_888(128, 128, 128), // Gray color
+            eadkp::COLOR_WHITE
+        );
     };
 
     let drawing = || {
