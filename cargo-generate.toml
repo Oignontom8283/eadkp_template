@@ -2,3 +2,5 @@
 description = "A Rust template for easily starting NumWorks app development using the EADKP library"
 project_name_case = "snake_case"
 exclude = ["assets/*", "justfile"]
+
+ignore = ["bootstrap.sh"]
