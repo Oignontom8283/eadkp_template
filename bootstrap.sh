@@ -49,6 +49,13 @@ fi
 PATH_GIVED="$(realpath "$PATH_GIVED")"
 PROJECT_NAME="$(basename "$PATH_GIVED")"
 
+# Check que le nom sois en caractère valide (alphanumérique, tirets, underscores, pas d'espaces)
+if ! [[ "$PROJECT_NAME" =~ ^[a-z][a-z0-9_-]*$ ]]; then
+    echo "Error: Project name '$PROJECT_NAME' contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed, and it must start with a letter."
+    exit 1
+fi
+
+
 echo ""
 echo "Project name: $PROJECT_NAME"
 echo "Project will be initialized at: $PATH_GIVED"
