@@ -111,8 +111,11 @@ echo "..."
 # Function to check if a file is in the exclude list
 is_excluded() {
     local file="$1"
+    # Remove ./ prefix if present for matching
+    local clean_file="${file#./}"
+    
     for exclude in "${EXCLUDE_FILES[@]}"; do
-        if [[ "$file" == $exclude* ]]; then
+        if [[ "$clean_file" == $exclude* ]]; then
             return 0 # Exclu
         fi
     done
