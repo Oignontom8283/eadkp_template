@@ -75,16 +75,16 @@ if ! git clone --no-checkout --quiet https://github.com/Oignontom8283/eadkp_temp
 fi
 
 # Enable sparse-checkout and checkout the repository
-if ! git sparse-checkout init --cone >/dev/null 2>&1; then
+if ! git sparse-checkout init >/dev/null 2>&1; then
     echo "Error: Failed to initialize sparse-checkout"
     exit 1
 fi
-if ! git sparse-checkout set --skip-checks '*' >/dev/null 2>&1; then
-    echo "Error: Failed to set sparse-checkout"
-    exit 1
-fi
-# Exclude bootstrap.sh from sparse-checkout after setting the pattern
-echo "!bootstrap.sh" >> .git/info/sparse-checkout
+
+# Configure sparse-checkout to include everything except bootstrap.sh
+cat > .git/info/sparse-checkout << 'EOF'
+/*
+!bootstrap.sh
+EOF
 if ! git checkout >/dev/null 2>&1; then
     echo "Error: Failed to checkout files"
     exit 1
