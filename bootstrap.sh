@@ -34,10 +34,10 @@ echo "Execution source: $EXECUTION_SOURCE"
 
 
 # If no name provided, prompt the user for it
-# exept if the script is run locally from its own directory
+# except if the script is run locally from its own directory
 if [[ -z "$PATH_GIVED" ]]; then
     SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-    if [[ "$EXECUTION_SOURCE" == "local" && "$SCRIPT_DIR" == "$(pwd)"]]; then
+    if [[ "$EXECUTION_SOURCE" == "local" && "$SCRIPT_DIR" == "$(pwd)" ]]; then
         IS_AUTO_BUILDING=true
         PATH_GIVED="$SCRIPT_DIR"
     else
@@ -57,7 +57,10 @@ echo "Project will be initialized at: $PATH_GIVED"
 mkdir -p "$PATH_GIVED"
 
 # Check if the directory is empty
-if [ -n "$(ls -A "$PATH_GIVED")" ]; then
+if ! ls -A "$PATH_GIVED" >/dev/null 2>&1; then
+    echo "Error: Cannot access directory '$PATH_GIVED'"
+    exit 1
+elif [ -n "$(ls -A "$PATH_GIVED" 2>/dev/null)" ]; then
     echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
     exit 1
 fi
@@ -66,7 +69,10 @@ fi
 cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
 
 # Clone the repository without checking out files
-git clone --no-checkout https://github.com/Oignontom8283/eadkp_template.git .
+if ! git clone --no-checkout https://github.com/Oignontom8283/eadkp_template.git .; then
+    echo "Error: Failed to clone repository"
+    exit 1
+fi
 
 # Exclude files from sparse-checkout
 echo "!bootstrap.sh" > .git/info/sparse-checkout
@@ -74,9 +80,18 @@ echo "!bootstrap.sh" > .git/info/sparse-checkout
 echo "*" >> .git/info/sparse-checkout
 
 # Enable sparse-checkout and checkout the repository
-git sparse-checkout init --cone
-git sparse-checkout set *
-git checkout
+if ! git sparse-checkout init --cone; then
+    echo "Error: Failed to initialize sparse-checkout"
+    exit 1
+fi
+if ! git sparse-checkout set '*'; then
+    echo "Error: Failed to set sparse-checkout"
+    exit 1
+fi
+if ! git checkout; then
+    echo "Error: Failed to checkout files"
+    exit 1
+fi
 
 
 echo ""
@@ -84,8 +99,13 @@ echo "Template files have been successfully copied to '$PATH_GIVED' !"
 
 
 # Extract the list of excluded files from cargo-generate.toml dynamically
-# EXCLUDE_FILES=($(grep -oP '(?<=exclude = \[)[^\]]*' cargo-generate.toml | tr -d '"' | tr ',' '\n'))
-EXCLUDE_FILES=($(grep -oP '(?<=exclude = \\[)[^\\]]*' cargo-generate.toml | tr -d '\"' | tr ',' '\\n'))
+EXCLUDE_FILES=()
+if [[ -f "cargo-generate.toml" ]]; then
+    # Use a more robust approach to parse the exclude array
+    EXCLUDE_FILES=($(grep -oP '(?<=exclude = \[)[^\]]*' cargo-generate.toml | tr -d '"' | tr ',' ' ' | tr -s ' '))
+else
+    echo "Warning: cargo-generate.toml not found, no files will be excluded from replacement"
+fi
 
 echo ""
 echo "Files/dirs excluded from symbol replacement: ${EXCLUDE_FILES[*]}"
@@ -104,7 +124,7 @@ is_excluded() {
 
 # Function to check if a file is a text file
 is_text_file() {
-    file "$1" | grep -q "text"
+    [[ -f "$1" ]] && file "$1" 2>/dev/null | grep -q "text"
 }
 
 FILES_REMPLACED=0
@@ -112,18 +132,19 @@ FILES_NOT_REPLACED=0
 UNEXPECTED_FILES_NOT_REPLACED=0
 
 # Replace {{project-name}} in all files except excluded ones
-find . -type f | while read -r file; do
-    
+# Use process substitution to avoid subshell variable scope issues
+while IFS= read -r -d '' file; do
     # Check if the file is excluded
     if ! is_excluded "$file"; then
-        
         # Check if the file is a text file
         if is_text_file "$file"; then
-
             # Replace {{project-name}} with the project name
-            sed -i "s/{{project-name}}/$PROJECT_NAME/g" "$file"
-            
-            FILES_REMPLACED=$((FILES_REMPLACED + 1))
+            if sed -i "s/{{project-name}}/$PROJECT_NAME/g" "$file"; then
+                FILES_REMPLACED=$((FILES_REMPLACED + 1))
+            else
+                echo "Error: Failed to update $file"
+                UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
+            fi
         else
             echo "WARN: Skipping ${file} because it is not a text file."
             UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
@@ -131,12 +152,12 @@ find . -type f | while read -r file; do
     else
         FILES_NOT_REPLACED=$((FILES_NOT_REPLACED + 1))
     fi
-done
+done < <(find . -type f -print0)
 
 echo "Symbol replacement completed ! :"
 echo "${FILES_REMPLACED} : files have been successfully updated with the project name."
 echo "${FILES_NOT_REPLACED} : files were excluded from replacement as per configuration."
-echo "${UNEXPECTED_FILES_NOT_REPLACED} : files were skipped because they are not text files."
+echo "${UNEXPECTED_FILES_NOT_REPLACED} : files were skipped because they are not text files or due to errors."
 
 
 echo ""
@@ -151,9 +172,11 @@ echo "Removed temporary files."
 
 # Remove git and create a new repository
 rm -rf .git
-git init
-
-echo "Create git repository."
+if ! git init; then
+    echo "Warning: Failed to initialize new git repository"
+else
+    echo "Created git repository."
+fi
 
 echo ""
 echo "Project '$PROJECT_NAME' has been successfully initialized at '$PATH_GIVED' !"
