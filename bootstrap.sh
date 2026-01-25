@@ -68,13 +68,24 @@ if ! mkdir -p "$PATH_GIVED"; then
     exit 1
 fi
 
-# Check if the directory is empty
+# Check if the directory is empty or contains only the bootstrap script
 if ! ls -A "$PATH_GIVED" >/dev/null 2>&1; then
     echo "Error: Cannot access directory '$PATH_GIVED'"
     exit 1
-elif [ -n "$(ls -A "$PATH_GIVED" 2>/dev/null)" ]; then
-    echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
-    exit 1
+else
+    # Count files in directory (excluding hidden files)
+    file_count=$(ls -1 "$PATH_GIVED" 2>/dev/null | wc -l)
+    
+    if [[ "$file_count" -eq 0 ]]; then
+        # Directory is empty - OK
+        :
+    elif [[ "$file_count" -eq 1 && -f "$PATH_GIVED/$_SELF_NAME" ]]; then
+        # Directory contains only the bootstrap script - OK
+        :
+    else
+        echo "Error: The directory '$PATH_GIVED' is not empty and contains files other than '$_SELF_NAME'. Please choose an empty directory."
+        exit 1
+    fi
 fi
 
 # Change to the project directory
