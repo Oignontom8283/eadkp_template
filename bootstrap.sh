@@ -1,13 +1,5 @@
 #!/bin/bash
 
-echo "Starting the project initialization script via eadkp template..."
-
-# Determine if the script is being run locally or remotely
-EXECUTION_SOURCE=$([[ -t 0 ]] && echo "local" || echo "remote")
-
-echo "Execution source: $EXECUTION_SOURCE"
-
-
 PATH_GIVED=""
 
 # Analyze arguments
@@ -31,6 +23,15 @@ while [[ "$#" -gt 0 ]]; do
             ;;
     esac
 done
+
+echo ""
+echo "Starting the project initialization script via eadkp template..."
+
+# Determine if the script is being run locally or remotely
+EXECUTION_SOURCE=$([[ -t 0 ]] && echo "local" || echo "remote")
+
+echo "Execution source: $EXECUTION_SOURCE"
+
 
 # If no name provided, prompt the user for it
 # exept if the script is run locally from its own directory
