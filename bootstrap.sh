@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Starting the project initialization script via eadkp template..."
+
 # Determine if the script is being run locally or remotely
 EXECUTION_SOURCE=$([[ -t 0 ]] && echo "local" || echo "remote")
 
