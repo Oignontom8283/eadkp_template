@@ -1,5 +1,7 @@
 #!/bin/bash
 
+_SELF_NAME="bootstrap.sh"
+
 PATH_GIVED=""
 
 # Analyze arguments
@@ -93,7 +95,7 @@ fi
 # Configure sparse-checkout to include everything except bootstrap.sh
 cat > .git/info/sparse-checkout << 'EOF'
 /*
-!bootstrap.sh
+!${_SELF_NAME}
 EOF
 if ! git checkout >/dev/null 2>&1; then
     echo "Error: Failed to checkout files"
@@ -185,7 +187,7 @@ echo "Cleaning up..."
 # Remove cargo generate file(s)
 rm -f cargo-generate.toml > /dev/null 2>&1
 rm -f cargo-generate.lock > /dev/null 2>&1
-rm -f bootstrap.sh > /dev/null 2>&1 # Remove self
+rm -f "${_SELF_NAME}" > /dev/null 2>&1 # Remove self
 
 echo "Removed temporary files."
 
