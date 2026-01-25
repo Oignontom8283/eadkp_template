@@ -134,24 +134,33 @@ UNEXPECTED_FILES_NOT_REPLACED=0
 # Replace {{project-name}} in all files except excluded ones
 # Use process substitution to avoid subshell variable scope issues
 while IFS= read -r -d '' file; do
-    # Check if the file is excluded
-    if ! is_excluded "$file"; then
-        # Check if the file is a text file
-        if is_text_file "$file"; then
-            # Replace {{project-name}} with the project name
-            if sed -i "s/{{project-name}}/$PROJECT_NAME/g" "$file"; then
-                FILES_REMPLACED=$((FILES_REMPLACED + 1))
-            else
-                echo "Error: Failed to update $file"
-                UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
-            fi
-        else
-            echo "WARN: Skipping ${file} because it is not a text file."
-            UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
-        fi
-    else
+    
+    # Skip excluded files
+    if is_excluded "$file"; then
         FILES_NOT_REPLACED=$((FILES_NOT_REPLACED + 1))
+        continue
     fi
+    
+    # Skip non-text files
+    if ! is_text_file "$file"; then
+        echo "WARN: Skipping ${file} because it is not a text file."
+        UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
+        continue
+    fi
+    
+    # Only process files that contain the pattern
+    if ! grep -q "{{project-name}}" "$file"; then
+        continue  # Skip files without the pattern (not counted)
+    fi
+    
+    # Perform the replacement
+    if sed -i "s/{{project-name}}/$PROJECT_NAME/g" "$file"; then
+        FILES_REMPLACED=$((FILES_REMPLACED + 1))
+    else
+        echo "Error: Failed to update $file"
+        UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
+    fi
+    
 done < <(find . -type f -print0)
 
 echo "Symbol replacement completed ! :"
