@@ -61,7 +61,10 @@ echo "Project name: $PROJECT_NAME"
 echo "Project will be initialized at: $PATH_GIVED"
 
 # Create project directory recursively, if it does not exist
-mkdir -p "$PATH_GIVED"
+if ! mkdir -p "$PATH_GIVED"; then
+    echo "Error: Failed to create directory '$PATH_GIVED'"
+    exit 1
+fi
 
 # Check if the directory is empty
 if ! ls -A "$PATH_GIVED" >/dev/null 2>&1; then
