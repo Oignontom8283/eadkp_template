@@ -78,7 +78,84 @@ git sparse-checkout init --cone
 git sparse-checkout set *
 git checkout
 
+
 echo ""
 echo "Template files have been successfully copied to '$PATH_GIVED' !"
 
 
+# Extract the list of excluded files from cargo-generate.toml dynamically
+# EXCLUDE_FILES=($(grep -oP '(?<=exclude = \[)[^\]]*' cargo-generate.toml | tr -d '"' | tr ',' '\n'))
+EXCLUDE_FILES=($(grep -oP '(?<=exclude = \\[)[^\\]]*' cargo-generate.toml | tr -d '\"' | tr ',' '\\n'))
+
+echo ""
+echo "Files/dirs excluded from symbol replacement: ${EXCLUDE_FILES[*]}"
+echo "..."
+
+# Function to check if a file is in the exclude list
+is_excluded() {
+    local file="$1"
+    for exclude in "${EXCLUDE_FILES[@]}"; do
+        if [[ "$file" == $exclude* ]]; then
+            return 0 # Exclu
+        fi
+    done
+    return 1 # Non exclu
+}
+
+# Function to check if a file is a text file
+is_text_file() {
+    file "$1" | grep -q "text"
+}
+
+FILES_REMPLACED=0
+FILES_NOT_REPLACED=0
+UNEXPECTED_FILES_NOT_REPLACED=0
+
+# Replace {{project-name}} in all files except excluded ones
+find . -type f | while read -r file; do
+    
+    # Check if the file is excluded
+    if ! is_excluded "$file"; then
+        
+        # Check if the file is a text file
+        if is_text_file "$file"; then
+
+            # Replace {{project-name}} with the project name
+            sed -i "s/{{project-name}}/$PROJECT_NAME/g" "$file"
+            
+            FILES_REMPLACED=$((FILES_REMPLACED + 1))
+        else
+            echo "WARN: Skipping ${file} because it is not a text file."
+            UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
+        fi
+    else
+        FILES_NOT_REPLACED=$((FILES_NOT_REPLACED + 1))
+    fi
+done
+
+echo "Symbol replacement completed ! :"
+echo "${FILES_REMPLACED} : files have been successfully updated with the project name."
+echo "${FILES_NOT_REPLACED} : files were excluded from replacement as per configuration."
+echo "${UNEXPECTED_FILES_NOT_REPLACED} : files were skipped because they are not text files."
+
+
+echo ""
+echo "Cleaning up..."
+
+# Remove cargo generate file(s)
+rm -f cargo-generate.toml > /dev/null 2>&1
+rm -f cargo-generate.lock > /dev/null 2>&1
+rm -f bootstrap.sh > /dev/null 2>&1 # Remove self
+
+echo "Removed temporary files."
+
+# Remove git and create a new repository
+rm -rf .git
+git init
+
+echo "Create git repository."
+
+echo ""
+echo "Project '$PROJECT_NAME' has been successfully initialized at '$PATH_GIVED' !"
+echo "You can now start working on your project."
+echo ""
