@@ -69,7 +69,7 @@ fi
 cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
 
 # Clone the repository without checking out files
-if ! git clone --no-checkout https://github.com/Oignontom8283/eadkp_template.git .; then
+if ! git clone --no-checkout --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
     echo "Error: Failed to clone repository"
     exit 1
 fi
@@ -80,15 +80,22 @@ echo "!bootstrap.sh" > .git/info/sparse-checkout
 echo "*" >> .git/info/sparse-checkout
 
 # Enable sparse-checkout and checkout the repository
-if ! git sparse-checkout init --cone; then
+if ! git sparse-checkout init --cone >/dev/null 2>&1; then
     echo "Error: Failed to initialize sparse-checkout"
     exit 1
 fi
-if ! git sparse-checkout set '*'; then
+if ! git sparse-checkout set --skip-checks '*' >/dev/null 2>&1; then
     echo "Error: Failed to set sparse-checkout"
     exit 1
 fi
+if ! git checkout >/dev/null 2>&1; then
+    echo "Error: Failed to checkout files"
+    exit 1
+fi
 if ! git checkout; then
+    echo "Error: Failed to checkout files"
+    exit 1
+if ! git checkout >/dev/null 2>&1; then
     echo "Error: Failed to checkout files"
     exit 1
 fi
@@ -161,7 +168,7 @@ while IFS= read -r -d '' file; do
         UNEXPECTED_FILES_NOT_REPLACED=$((UNEXPECTED_FILES_NOT_REPLACED + 1))
     fi
     
-done < <(find . -type f -print0)
+done < <(find . -type f -not -path './.git/*' -print0)
 
 echo "Symbol replacement completed ! :"
 echo "${FILES_REMPLACED} : files have been successfully updated with the project name."
@@ -181,7 +188,7 @@ echo "Removed temporary files."
 
 # Remove git and create a new repository
 rm -rf .git
-if ! git init; then
+if ! git init --quiet >/dev/null 2>&1; then
     echo "Warning: Failed to initialize new git repository"
 else
     echo "Created git repository."
