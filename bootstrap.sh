@@ -45,5 +45,10 @@ fi
 
 # Convert to absolute path
 PATH_GIVED="$(realpath "$PATH_GIVED")"
+PROJECT_NAME="$(basename "$PATH_GIVED")"
 
+echo ""
+echo "Project name: $PROJECT_NAME"
+echo "Project will be initialized at: $PATH_GIVED"
+echo ""
 
