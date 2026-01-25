@@ -37,6 +37,7 @@ done
 if [[ -z "$PATH_GIVED" ]]; then
     SCRIPT_DIR="$(dirname "$(realpath "$0")")"
     if [[ "$EXECUTION_SOURCE" == "local" && "$SCRIPT_DIR" == "$(pwd)"]]; then
+        IS_AUTO_BUILDING=true
         PATH_GIVED="$SCRIPT_DIR"
     else
         read -p "Please enter the project name: " PATH_GIVED
@@ -51,4 +52,8 @@ echo ""
 echo "Project name: $PROJECT_NAME"
 echo "Project will be initialized at: $PATH_GIVED"
 echo ""
+
+# Create project directory recursively, if it does not exist
+mkdir -p "$PATH_GIVED"
+
 
