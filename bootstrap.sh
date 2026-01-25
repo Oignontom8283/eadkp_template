@@ -40,7 +40,6 @@ echo "Execution source: $EXECUTION_SOURCE"
 if [[ -z "$PATH_GIVED" ]]; then
     SCRIPT_DIR="$(dirname "$(realpath "$0")")"
     if [[ "$EXECUTION_SOURCE" == "local" && "$SCRIPT_DIR" == "$(pwd)" ]]; then
-        IS_AUTO_BUILDING=true
         PATH_GIVED="$SCRIPT_DIR"
     else
         read -p "Please enter the project name: " PATH_GIVED
@@ -50,6 +49,9 @@ fi
 # Convert to absolute path
 PATH_GIVED="$(realpath "$PATH_GIVED")"
 PROJECT_NAME="$(basename "$PATH_GIVED")"
+
+# Determine if we are auto-building (i.e., the provided path is the current directory)
+IS_AUTO_BUILDING=$([[ "$PATH_GIVED" == "$(pwd)" ]] && echo "true" || echo "false")
 
 # Check that the project name contains only valid characters (alphanumeric, hyphens, underscores, no spaces)
 if ! [[ "$PROJECT_NAME" =~ ^[a-z][a-z0-9_-]*$ ]]; then
@@ -68,44 +70,56 @@ if ! mkdir -p "$PATH_GIVED"; then
     exit 1
 fi
 
+
 # Change to the project directory
 cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
 
+echo ""
 
-# Check if the directory is empty
-if ! ls -A "$PATH_GIVED" >/dev/null 2>&1; then
-    echo "Error: Cannot access directory '$PATH_GIVED'"
-    exit 1
-elif [ -n "$(ls -A "$PATH_GIVED" 2>/dev/null)" ]; then
-    echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
-    exit 1
-fi
+# If auto-building, no clone is needed
+if [[ "$IS_AUTO_BUILDING" == "true" ]]; then
+    # Auto-building: use existing files
 
-# Clone the repository without checking out files
-if ! git clone --no-checkout --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
-    echo "Error: Failed to clone repository"
-    exit 1
-fi
+    echo "Auto-building detected: Using existing files in the current directory."
+    echo "If the template files are incorrect, this may cause errors."
+else
+    # Clone the template repository using sparse-checkout
 
-# Enable sparse-checkout and checkout the repository
-if ! git sparse-checkout init >/dev/null 2>&1; then
-    echo "Error: Failed to initialize sparse-checkout"
-    exit 1
-fi
+    echo "Cloning template repository into '$PATH_GIVED' ..."
 
-# Configure sparse-checkout to include everything except bootstrap.sh
-cat > .git/info/sparse-checkout << 'EOF'
+    # Check if the directory is empty
+    if ! ls -A "$PATH_GIVED" >/dev/null 2>&1; then
+        echo "Error: Cannot access directory '$PATH_GIVED'"
+        exit 1
+    elif [ -n "$(ls -A "$PATH_GIVED" 2>/dev/null)" ]; then
+        echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
+        exit 1
+    fi
+
+    # Clone the repository without checking out files
+    if ! git clone --no-checkout --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
+        echo "Error: Failed to clone repository"
+        exit 1
+    fi
+
+    # Enable sparse-checkout and checkout the repository
+    if ! git sparse-checkout init >/dev/null 2>&1; then
+        echo "Error: Failed to initialize sparse-checkout"
+        exit 1
+    fi
+
+    # Configure sparse-checkout to include everything except bootstrap.sh
+    cat > .git/info/sparse-checkout << "EOF"
 /*
 !${_SELF_NAME}
 EOF
-if ! git checkout >/dev/null 2>&1; then
-    echo "Error: Failed to checkout files"
-    exit 1
+    if ! git checkout >/dev/null 2>&1; then
+        echo "Error: Failed to checkout files"
+        exit 1
+    fi
+
+    echo "Template files have been successfully cloned to '$PATH_GIVED' !"
 fi
-
-
-echo ""
-echo "Template files have been successfully copied to '$PATH_GIVED' !"
 
 
 # Extract the list of excluded files from cargo-generate.toml dynamically
