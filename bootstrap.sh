@@ -52,7 +52,6 @@ PROJECT_NAME="$(basename "$PATH_GIVED")"
 echo ""
 echo "Project name: $PROJECT_NAME"
 echo "Project will be initialized at: $PATH_GIVED"
-echo ""
 
 # Create project directory recursively, if it does not exist
 mkdir -p "$PATH_GIVED"
@@ -62,4 +61,24 @@ if [ -n "$(ls -A "$PATH_GIVED")" ]; then
     echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
     exit 1
 fi
+
+# Change to the project directory
+cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
+
+# Clone the repository without checking out files
+git clone --no-checkout https://github.com/Oignontom8283/eadkp_template.git .
+
+# Exclude files from sparse-checkout
+echo "!bootstrap.sh" > .git/info/sparse-checkout
+
+echo "*" >> .git/info/sparse-checkout
+
+# Enable sparse-checkout and checkout the repository
+git sparse-checkout init --cone
+git sparse-checkout set *
+git checkout
+
+echo ""
+echo "Template files have been successfully copied to '$PATH_GIVED' !"
+
 
