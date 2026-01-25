@@ -1,22 +1,18 @@
 #!/bin/bash
 
-# Get the directory of the current script
-current_dir=$(dirname "$0")
-
 # Determine if the script is being run locally or remotely
-if [ -t 0 ]; then
-    EXECUTION_SOURCE="local"
-else
-    EXECUTION_SOURCE="remote"
-fi
+EXECUTION_SOURCE=$([[ -t 0 ]] && echo "local" || echo "remote")
 
-NAME=""
+echo "Execution source: $EXECUTION_SOURCE"
+
+
+PATH_GIVED=""
 
 # Analyze arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --name) # Argument --name
-            NAME="$2"
+            PATH_GIVED="$2"
             shift 2
             ;;
         --help) # Display help
@@ -34,14 +30,18 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# If script is in work directory
-if [ "$current_dir" == "$(pwd)" ]; then
-    IS_IN_WORK_DIR=true
-    echo "Le projet dans le répertoire courant."
-else
-    IS_IN_WORK_DIR=false
-    echo "The project will be initialized in the directory: $current_dir"
+# If no name provided, prompt the user for it
+# exept if the script is run locally from its own directory
+if [[ -z "$PATH_GIVED" ]]; then
+    SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+    if [[ "$EXECUTION_SOURCE" == "local" && "$SCRIPT_DIR" == "$(pwd)"]]; then
+        PATH_GIVED="$SCRIPT_DIR"
+    else
+        read -p "Please enter the project name: " PATH_GIVED
+    fi
 fi
 
-echo "Execution source: $EXECUTION_SOURCE"
+# Convert to absolute path
+PATH_GIVED="$(realpath "$PATH_GIVED")"
+
 
