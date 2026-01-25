@@ -57,4 +57,9 @@ echo ""
 # Create project directory recursively, if it does not exist
 mkdir -p "$PATH_GIVED"
 
+# Check if the directory is empty
+if [ -n "$(ls -A "$PATH_GIVED")" ]; then
+    echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
+    exit 1
+fi
 
