@@ -68,28 +68,18 @@ if ! mkdir -p "$PATH_GIVED"; then
     exit 1
 fi
 
-# Check if the directory is empty or contains only the bootstrap script
+# Change to the project directory
+cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
+
+
+# Check if the directory is empty
 if ! ls -A "$PATH_GIVED" >/dev/null 2>&1; then
     echo "Error: Cannot access directory '$PATH_GIVED'"
     exit 1
-else
-    # Count files in directory (excluding hidden files)
-    file_count=$(ls -1 "$PATH_GIVED" 2>/dev/null | wc -l)
-    
-    if [[ "$file_count" -eq 0 ]]; then
-        # Directory is empty - OK
-        :
-    elif [[ "$file_count" -eq 1 && -f "$PATH_GIVED/$_SELF_NAME" ]]; then
-        # Directory contains only the bootstrap script - OK
-        :
-    else
-        echo "Error: The directory '$PATH_GIVED' is not empty and contains files other than '$_SELF_NAME'. Please choose an empty directory."
-        exit 1
-    fi
+elif [ -n "$(ls -A "$PATH_GIVED" 2>/dev/null)" ]; then
+    echo "Error: The directory '$PATH_GIVED' is not empty. Please choose an empty directory."
+    exit 1
 fi
-
-# Change to the project directory
-cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
 
 # Clone the repository without checking out files
 if ! git clone --no-checkout --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
