@@ -105,7 +105,7 @@ else
     fi
 
     # Clone the repository without checking out files
-    if ! git clone --no-checkout --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
+    if ! git clone --no-checkout --depth 1 --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
         echo "Error: Failed to clone repository"
         exit 1
     fi
