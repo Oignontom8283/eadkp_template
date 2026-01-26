@@ -34,6 +34,14 @@ EXECUTION_SOURCE=$([[ -t 0 ]] && echo "local" || echo "remote")
 
 echo "Execution source: $EXECUTION_SOURCE"
 
+# Check git is installed
+if ! command -v git >/dev/null 2>&1; then
+    echo "Error: git is not installed. Please install git and try again."
+    exit 1
+else
+    echo "git is installed."
+fi
+
 
 # If no name provided, prompt the user for it
 # except if the script is run locally from its own directory
