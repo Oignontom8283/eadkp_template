@@ -21,7 +21,7 @@ pub fn main() -> isize {
 
     // Load image
     // IMPORTANT: When you add an image, use `just clean` before recompiling so that the Rust compiler takes the new image into account.
-    let eadkp_logo = eadkp::Image::from_raw(eadkp::include_image!("eadkp_logo_64_max.png")).expect("Failed to load eadkp logo image");
+    let eadkp_logo = eadkp::Image::from_raw(eadkp::include_image!("eadkp_logo_64.png")).expect("Failed to load eadkp logo image");
 
     // Drawing closure. Called before looping.
     let first_drawing = || {
