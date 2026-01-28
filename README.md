@@ -10,11 +10,11 @@ A Rust template for NumWorks apps using the EADKP library.
 Run the following command:
 
 ```
-bash <(curl -s https://raw.githubusercontent.com/EADKP/eadkp_template/main/bootstrap.sh)>
+bash <(curl -s https://raw.githubusercontent.com/Oignontom8283/eadkp_template/main/bootstrap.sh)
 ```
 OR
 ```
-bash <(curl -s https://raw.githubusercontent.com/EADKP/eadkp_template/main/bootstrap.sh) --name "my_app">
+bash <(curl -s https://raw.githubusercontent.com/Oignontom8283/eadkp_template/main/bootstrap.sh) --name "my_app"
 ```
 
 **Finish !**
