@@ -6,6 +6,8 @@ Simple base code including only the strict necessary using the eadkp library
 and displaying "Hello, world!" on the screen.
 */
 
+use eadkp::ImageFormat;
+
 // Import the eadkp crate with macros
 #[macro_use]
 extern crate eadkp;
@@ -21,7 +23,9 @@ pub fn main() -> isize {
 
     // Load image
     // IMPORTANT: When you add an image, use `just clean` before recompiling so that the Rust compiler takes the new image into account.
-    let eadkp_logo = eadkp::Image::from_raw(eadkp::include_image!("eadkp_logo_64.png")).expect("Failed to load eadkp logo image");
+    // ::from_flash - Create an image object from flash without copying it to RAM (slow reading, RAM savings)
+    // ::to_ram - Create an image object by copying data to RAM (fast reading, high RAM consumption)
+    let eadkp_logo = eadkp::ImageLoader::from_flash(eadkp::include_image!("eadkp_logo_64.png")).expect("Failed to load eadkp logo image");
 
     // Drawing closure. Called before looping.
     let first_drawing = || {
@@ -33,13 +37,12 @@ pub fn main() -> isize {
         let height_center = (eadkp::SCREEN_RECT.height as f32 / 2.9) as u16;
 
         let image_position = eadkp::Point {
-            x: eadkp::SCREEN_RECT.width / 2 - eadkp_logo.width / 2,
-            y: height_center - eadkp_logo.height / 2,
+            x: eadkp::SCREEN_RECT.width / 2 - eadkp_logo.width() / 2,
+            y: height_center - eadkp_logo.height() / 2,
         };
 
         // Draw the loaded image at position (50, 50)
         eadkp::display::push_image(&eadkp_logo, image_position);
-
 
         // DISPLAY TITLE TEXT
         
@@ -48,7 +51,7 @@ pub fn main() -> isize {
 
         let title_position = eadkp::Point {
             x: eadkp::SCREEN_RECT.width / 2 - (title_text_len / 2),
-            y: height_center + (eadkp_logo.height / 2) + 20 - (eadkp::LARGE_FONT.height / 2),
+            y: height_center + (eadkp_logo.height() / 2) + 20 - (eadkp::LARGE_FONT.height / 2),
         };
 
         eadkp::display::draw_string(
@@ -67,7 +70,7 @@ pub fn main() -> isize {
 
         let subtitle_position = eadkp::Point {
             x: eadkp::SCREEN_RECT.width / 2 - (subtitle_text_len / 2),
-            y: height_center + (eadkp_logo.height / 2) + 40 - (eadkp::SMALL_FONT.height / 2),
+            y: height_center + (eadkp_logo.height() / 2) + 40 - (eadkp::SMALL_FONT.height / 2),
         };
         
         eadkp::display::draw_string(
