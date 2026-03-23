@@ -108,6 +108,12 @@ fi
 # Change to the project directory
 cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1; }
 
+# Detect whether a git repository already existed before template operations
+PREEXISTING_GIT_REPO="false"
+if [[ -d .git ]]; then
+    PREEXISTING_GIT_REPO="true"
+fi
+
 echo ""
 
 # If auto-building, no clone is needed
@@ -240,12 +246,16 @@ rm -f "${_SELF_NAME}" > /dev/null 2>&1 # Remove self
 
 echo "Removed temporary files."
 
-# Remove git and create a new repository
-rm -rf .git
-if ! git init --quiet >/dev/null 2>&1; then
-    echo "Warning: Failed to initialize new git repository"
+# Remove git and create a new repository only if there wasn't one initially
+if [[ "$PREEXISTING_GIT_REPO" == "true" ]]; then
+    echo "Existing git repository detected. Keeping current .git directory."
 else
-    echo "Created git repository."
+    rm -rf .git
+    if ! git init --quiet >/dev/null 2>&1; then
+        echo "Warning: Failed to initialize new git repository"
+    else
+        echo "Created git repository."
+    fi
 fi
 
 echo ""
