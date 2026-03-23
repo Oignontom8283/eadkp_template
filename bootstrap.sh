@@ -57,19 +57,45 @@ fi
 # Convert to absolute path
 PATH_GIVED="$(realpath "$PATH_GIVED")"
 PROJECT_NAME="$(basename "$PATH_GIVED")"
+ORIGINAL_PROJECT_NAME="$PROJECT_NAME"
 
 # Determine if we are auto-building (i.e., the provided path is the current directory)
 IS_AUTO_BUILDING=$([[ "$PATH_GIVED" == "$(pwd)" ]] && echo "true" || echo "false")
 
-# Check that the project name contains only valid characters (alphanumeric, hyphens, underscores, no spaces)
-if ! [[ "$PROJECT_NAME" =~ ^[a-z][a-z0-9_-]*$ ]]; then
-    echo "Error: Project name '$PROJECT_NAME' contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed, and it must start with a letter."
+# Build a Cargo-compatible name:
+# - lowercase
+# - spaces and hyphens replaced with underscores
+FORMATTED_CARGO_NAME="$(echo "$ORIGINAL_PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr ' -' '__')"
+
+# Check that the project name contains only valid Cargo characters
+if ! [[ "$ORIGINAL_PROJECT_NAME" =~ ^[a-z][a-z0-9_-]*$ ]]; then
+    echo "Project name '$ORIGINAL_PROJECT_NAME' is not Cargo-compatible."
+    echo "Proposed Cargo-compatible name: '$FORMATTED_CARGO_NAME'"
+
+    read -p "Do you want to use this formatted name? (y/N): " USE_FORMATTED_NAME
+    if [[ "$USE_FORMATTED_NAME" =~ ^[Yy]$ ]]; then
+        if ! [[ "$FORMATTED_CARGO_NAME" =~ ^[a-z][a-z0-9_]*$ ]]; then
+            echo "Error: The formatted name '$FORMATTED_CARGO_NAME' is still not Cargo-compatible."
+            echo "Please choose a project name starting with a letter and containing only letters, numbers, spaces, hyphens, or underscores."
+            exit 1
+        fi
+        echo "Using formatted Cargo name: '$FORMATTED_CARGO_NAME'"
+    else
+        echo "Initialization aborted by user."
+        exit 1
+    fi
+fi
+
+if ! [[ "$FORMATTED_CARGO_NAME" =~ ^[a-z][a-z0-9_]*$ ]]; then
+    echo "Error: Cargo name '$FORMATTED_CARGO_NAME' is invalid."
+    echo "Please use a project name that can be transformed into a valid Cargo name."
     exit 1
 fi
 
 
 echo ""
-echo "Project name: $PROJECT_NAME"
+echo "Project name (directory): $ORIGINAL_PROJECT_NAME"
+echo "Cargo name (text replacement): $FORMATTED_CARGO_NAME"
 echo "Project will be initialized at: $PATH_GIVED"
 
 # Create project directory recursively, if it does not exist
@@ -166,7 +192,7 @@ FILES_REMPLACED=0
 FILES_NOT_REPLACED=0
 UNEXPECTED_FILES_NOT_REPLACED=0
 
-# Replace {{project-name}} in all files except excluded ones
+# Replace {{project-name}} with cargo name in all files except excluded ones
 # Use process substitution to avoid subshell variable scope issues
 while IFS= read -r -d '' file; do
     
@@ -189,7 +215,7 @@ while IFS= read -r -d '' file; do
     fi
     
     # Perform the replacement
-    if sed -i "s/{{project-name}}/$PROJECT_NAME/g" "$file"; then
+    if sed -i "s/{{project-name}}/$FORMATTED_CARGO_NAME/g" "$file"; then
         FILES_REMPLACED=$((FILES_REMPLACED + 1))
     else
         echo "Error: Failed to update $file"
@@ -223,6 +249,6 @@ else
 fi
 
 echo ""
-echo "Project '$PROJECT_NAME' has been successfully initialized at '$PATH_GIVED' !"
+echo "Project '$ORIGINAL_PROJECT_NAME' has been successfully initialized at '$PATH_GIVED' !"
 echo "You can now start working on your project."
 echo ""
