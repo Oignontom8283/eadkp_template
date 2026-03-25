@@ -5,7 +5,7 @@ A Rust template for NumWorks apps using the EADKP library.
 
 ## Usage
 
-[View the eadkp start project instructions here](https://github.com/Oignontom8283/eadkp?tab=readme-ov-file#installation-et-utilisation)
+[View the eadkp start project instructions here](https://github.com/Oignontom8283/eadkp/blob/main/README_EN.md#installation-and-usage)
 
 ## License
 
