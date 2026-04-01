@@ -1,11 +1,14 @@
 
 # Eadkp Template
 
-A Rust template for NumWorks apps using the EADKP library.
+A Rust template for NumWorks apps powered by the Eadkp framework.
 
 ## Usage
 
-[View the eadkp start project instructions here](https://github.com/Oignontom8283/eadkp/blob/main/README_EN.md#installation-and-usage)
+This template is part of the quick start guide for creating a NumWorks application with Eadkp.
+
+[View the instructions for creating an eadkp-powered project here](https://github.com/Oignontom8283/eadkp/wiki/EN-Quick-Start) to learn how to use this template to create your own application.
+
 
 ## License
 
