@@ -7,7 +7,7 @@ A Rust template for NumWorks apps powered by the Eadkp framework.
 
 This template is part of the quick start guide for creating a NumWorks application with Eadkp.
 
-[View the instructions for creating an eadkp-powered project here](https://github.com/Oignontom8283/eadkp/wiki/EN-Quick-Start) to learn how to use this template to create your own application.
+[View the instructions for creating an eadkp-powered project here](https://github.com/Oignontom8283/eadkp/wiki/Quick-Start) to learn how to use this template to create your own application.
 
 
 ## License
