@@ -66,4 +66,4 @@ target:
     rustup target add thumbv7em-none-eabihf
 
 a:
-    @echo "Testing justfile..."
+    @echo "Testing justfile [ ... ]"
