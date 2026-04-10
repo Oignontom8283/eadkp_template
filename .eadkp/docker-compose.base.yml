@@ -6,8 +6,6 @@ services:
       context: https://github.com/Oignontom8283/eadkp.git#dev
       dockerfile: dockerfile
     image: nraddi:latest
-    container_name: ${PROJECT_NAME}
-    working_dir: /workspace/${PROJECT_NAME}
     volumes:
       # Support X11
       - /tmp/.X11-unix:/tmp/.X11-unix
@@ -26,4 +24,3 @@ services:
       - EADKP_PRIMARY_BUILD=1
       # Uncomment for detailed libusb debugging
       # - LIBUSB_DEBUG=3
-    device_cgroup_rules:

@@ -5,6 +5,8 @@ include:
 
 services:
   eadkp-dev:
+    container_name: ${PROJECT_NAME}
+    working_dir: /workspace/${PROJECT_NAME}
     volumes:
       - ./:/workspace/${PROJECT_NAME}
       - 'c 189:* rmw'   # All USB devices (major 189)
