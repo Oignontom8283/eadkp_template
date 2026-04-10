@@ -92,6 +92,9 @@ for file in "${!file_hashes[@]}"; do
     fi
 done
 
+# Ensure all scripts remain executable
+chmod +x "$DIR_NAME"/*.sh 2>/dev/null || true
+
 # 2. Check local files (to delete if not present on the remote)
 for file in "${!local_file_hashes[@]}"; do
     if is_ignored_file "$file"; then
