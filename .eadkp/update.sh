@@ -121,7 +121,7 @@ fi
 echo ""
 echo "[Launchers] Verifying root launchers..."
 
-for launcher in shell.sh start.sh update.sh; do
+for launcher in docker.sh update.sh; do
     curl -s -L -o "$launcher.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$launcher"
     if [ -f "$launcher" ]; then
         if ! cmp -s "$launcher.tmp" "$launcher"; then
