@@ -8,6 +8,12 @@ REPO="Oignontom8283/eadkp_template"
 BRANCH="main"
 DIR_NAME=".eadkp"
 
+# Safety check to prevent running the script directly from within its folder
+if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
+    echo "[Safety] Please run the update script from the root directory of the project."
+    exit 1
+fi
+
 # Get the list of files (name and hash) in the '$DIR_NAME' folder from the repo https://github.com/$REPO.git
 
 # Declare a dictionary (associative array in bash)
