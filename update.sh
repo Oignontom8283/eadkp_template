@@ -89,5 +89,24 @@ for file in "${!local_file_hashes[@]}"; do
     fi
 done
 
+
+# Update Cargo dependencies
+
+echo "[Dependencies] Updating Cargo dependencies..."
+
+if just --yes update; then
+    echo "[Dependencies] Cargo dependencies updated successfully."
+else
+    echo "[Dependencies] ERROR: Failed to update Cargo dependencies."
+    exit 1
+fi
+
+
+# Final message
+
+echo ""
+echo "Updating process completed successfully!"
+echo ""
+
 }
 exit 0
