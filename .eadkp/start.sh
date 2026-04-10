@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Source utilities and export project name
+source .eadkp/utils.sh
+export_project_name
+
 # Check docker is installed
 if ! command -v docker &> /dev/null
 then

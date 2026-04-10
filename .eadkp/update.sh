@@ -4,9 +4,9 @@
 # into memory before executing, preventing issues if the script changes itself.
 {
 
-REPO="Oignontom8283/eadkp_template"
-BRANCH="main"
-DIR_NAME=".eadkp"
+# Load external configuration if present
+source .eadkp/utils.sh
+load_config
 
 # Safety check to prevent running the script directly from within its folder
 if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
@@ -73,6 +73,11 @@ mkdir -p "$DIR_NAME"
 
 # 1. Check remote files (to download or update)
 for file in "${!file_hashes[@]}"; do
+    if [[ "$file" == "config.env" ]]; then
+        # Skip the configuration file from being overwritten by remote templates
+        continue
+    fi
+
     remote_sha="${file_hashes[$file]}"
     local_sha="${local_file_hashes[$file]}"
 
@@ -89,6 +94,11 @@ done
 
 # 2. Check local files (to delete if not present on the remote)
 for file in "${!local_file_hashes[@]}"; do
+    if [[ "$file" == "config.env" ]]; then
+        # Ensure our local config file is never deleted even if absent from remote
+        continue
+    fi
+
     if [[ -z "${file_hashes[$file]}" ]]; then
         echo "[Updating] Deleting file that no longer exists on the remote: $file"
         rm -f "$DIR_NAME/$file"
@@ -106,6 +116,27 @@ else
     echo "[Dependencies] ERROR: Failed to update Cargo dependencies."
     exit 1
 fi
+
+# Verify and auto-restore the root launchers
+echo ""
+echo "[Launchers] Verifying root launchers..."
+
+for launcher in shell.sh start.sh update.sh; do
+    curl -s -L -o "$launcher.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$launcher"
+    if [ -f "$launcher" ]; then
+        if ! cmp -s "$launcher.tmp" "$launcher"; then
+            echo "[Launchers] Updating modified root launcher: $launcher"
+            mv "$launcher.tmp" "$launcher"
+            chmod +x "$launcher"
+        else
+            rm "$launcher.tmp"
+        fi
+    else
+        echo "[Launchers] Restoring missing root launcher: $launcher"
+        mv "$launcher.tmp" "$launcher"
+        chmod +x "$launcher"
+    fi
+done
 
 
 # Final message
