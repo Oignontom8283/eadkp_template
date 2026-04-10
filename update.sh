@@ -18,7 +18,7 @@ declare -A file_hashes
 json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/$DIR_NAME?ref=$BRANCH" || echo "[]")
 
 if [[ "$json_response" == "[]" ]]; then
-    echo "The $DIR_NAME folder is empty or does not exist."
+    echo "[Remote] ERROR: The $DIR_NAME folder is empty or does not exist."
     exit 0
 fi
 
@@ -48,7 +48,7 @@ if [[ -d "$DIR_NAME" ]]; then
         fi
     done
 else
-    echo "The local folder $DIR_NAME does not exist."
+    echo "[Local] ERROR: The folder $DIR_NAME does not exist."
 fi
 
 # # Display the local dictionary content
@@ -71,20 +71,20 @@ for file in "${!file_hashes[@]}"; do
     local_sha="${local_file_hashes[$file]}"
 
     if [[ -z "$local_sha" ]]; then
-        echo "Downloading new file: $file"
+        echo "[Updating] Downloading new file: $file"
         curl -s -L -o "$DIR_NAME/$file" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
     elif [[ "$remote_sha" != "$local_sha" ]]; then
-        echo "Updating modified file: $file"
+        echo "[Updating] Updating modified file: $file"
         curl -s -L -o "$DIR_NAME/$file" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
     else
-        echo "The file $file is up to date."
+        echo "[Updating] The file $file is up to date."
     fi
 done
 
 # 2. Check local files (to delete if not present on the remote)
 for file in "${!local_file_hashes[@]}"; do
     if [[ -z "${file_hashes[$file]}" ]]; then
-        echo "Deleting local file that no longer exists on the remote: $file"
+        echo "[Updating] Deleting file that no longer exists on the remote: $file"
         rm -f "$DIR_NAME/$file"
     fi
 done
