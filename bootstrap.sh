@@ -1,6 +1,8 @@
 #!/bin/bash
 
 _SELF_NAME="bootstrap.sh"
+REPO_URL="https://github.com/Oignontom8283/eadkp_template.git"
+BRANCH="main"
 
 PATH_GIVED=""
 
@@ -11,10 +13,15 @@ while [[ "$#" -gt 0 ]]; do
             PATH_GIVED="$2"
             shift 2
             ;;
+        --branch) # Argument --branch
+            BRANCH="$2"
+            shift 2
+            ;;
         --help) # Display help
             echo "Usage: $0 [options]"
             echo "Options:"
             echo "  --name <value>    Name of the project"
+            echo "  --branch <value>  Branch to clone (default: main)"
             echo "  --help            Display this help message"
             exit 0
             ;;
@@ -137,8 +144,8 @@ else
     fi
 
     # Clone the repository without checking out files
-    if ! git clone --no-checkout --depth 1 --quiet https://github.com/Oignontom8283/eadkp_template.git .; then
-        echo "Error: Failed to clone repository"
+    if ! git clone --branch "$BRANCH" --no-checkout --depth 1 --quiet "$REPO_URL" .; then
+        echo "Error: Failed to clone repository from $REPO_URL (branch: $BRANCH)"
         exit 1
     fi
 
