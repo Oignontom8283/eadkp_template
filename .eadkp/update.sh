@@ -73,8 +73,8 @@ mkdir -p "$DIR_NAME"
 
 # 1. Check remote files (to download or update)
 for file in "${!file_hashes[@]}"; do
-    if [[ "$file" == "config.env" ]]; then
-        # Skip the configuration file from being overwritten by remote templates
+    if is_ignored_file "$file"; then
+        # Skip the ignored file from being overwritten by remote templates
         continue
     fi
 
@@ -94,8 +94,8 @@ done
 
 # 2. Check local files (to delete if not present on the remote)
 for file in "${!local_file_hashes[@]}"; do
-    if [[ "$file" == "config.env" ]]; then
-        # Ensure our local config file is never deleted even if absent from remote
+    if is_ignored_file "$file"; then
+        # Ensure our local ignored files are never deleted even if absent from remote
         continue
     fi
 
