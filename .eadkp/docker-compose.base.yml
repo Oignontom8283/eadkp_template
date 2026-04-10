@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  eadkp-dev:
+    build: 
+      context: https://github.com/Oignontom8283/eadkp.git#dev
+      dockerfile: dockerfile
+    image: nraddi:latest
+    container_name: ${PROJECT_NAME}
+    working_dir: /workspace/${PROJECT_NAME}
+    volumes:
+      # Support X11
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      # Support Wayland (fallback to wayland-0 if WAYLAND_DISPLAY is unset)
+      - ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}:/tmp/${WAYLAND_DISPLAY:-wayland-0}
+      # Mount the entire USB bus to allow hotplug support
+      - /dev/bus/usb:/dev/bus/usb
+      # Provide access to GPU rendering (required for graphical apps / OpenGL)
+      - /dev/dri:/dev/dri
+    tty: true
+    stdin_open: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=/tmp
+      - EADKP_PRIMARY_BUILD=1
+      # Uncomment for detailed libusb debugging
+      # - LIBUSB_DEBUG=3
+    device_cgroup_rules:
