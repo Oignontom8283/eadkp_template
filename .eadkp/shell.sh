@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Source utilities and export project name
+source .eadkp/utils.sh
+export_project_name
+
 # Allow local connections to the X server (silencing errors if not in a GUI session)
 xhost +local:docker >/dev/null 2>&1
 
