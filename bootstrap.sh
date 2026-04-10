@@ -9,11 +9,11 @@ PATH_GIVED=""
 # Analyze arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --name) # Argument --name
+        --name|-n) # Argument --name
             PATH_GIVED="$2"
             shift 2
             ;;
-        --branch) # Argument --branch
+        --branch|-b) # Argument --branch
             BRANCH="$2"
             shift 2
             ;;
