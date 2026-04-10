@@ -21,6 +21,24 @@ load_config() {
     fi
 }
 
+# Function to check if a file should be ignored from updates
+is_ignored_file() {
+    local target="$1"
+    
+    # Always protect config.env natively, just in case a user removes it from the list by mistake
+    if [[ "$target" == "config.env" ]]; then
+        return 0
+    fi
+    
+    for ignored in $IGNORE_FILES; do
+        if [[ "$ignored" == "$target" ]]; then
+            return 0
+        fi
+    done
+    
+    return 1
+}
+
 # Function to extract the project name from Cargo.toml and export it
 export_project_name() {
     export PROJECT_NAME=$(grep -m 1 '^name *=' Cargo.toml | cut -d '"' -f 2)
