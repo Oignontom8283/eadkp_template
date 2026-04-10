@@ -1,10 +1,8 @@
-version: "3.9"
-
-include:
-  - .eadkp/docker-compose.base.yml
-
 services:
   eadkp-dev:
+    extends:
+      file: .eadkp/docker-compose.base.yml
+      service: eadkp-dev
     container_name: ${PROJECT_NAME}
     working_dir: /workspace/${PROJECT_NAME}
     volumes:
