@@ -1,14 +1,11 @@
 #!/bin/bash
 
-# Check docker is installed
-if ! command -v docker &> /dev/null
-then
-    echo "Docker could not be found. Please install Docker to proceed."
-    exit 1
-fi
+# Target directory containing the internal scripts
+TARGET_DIR=".eadkp"
+TARGET_SCRIPT="$TARGET_DIR/$(basename "$0")"
 
-# Allow local connections to the X server
-xhost +local:docker
+# Move to the script's directory in case it is called from another location
+cd "$(dirname "$0")"
 
-# Start the Docker container with GUI support and pass all arguments
-docker compose up -d "$@"
+# Pass execution to the internal script and forward any given arguments
+exec "./$TARGET_SCRIPT" "$@"
