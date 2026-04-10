@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Enclosing the entire script in a block ensures Bash loads everything 
+# into memory before executing, preventing issues if the script changes itself.
+{
+
 REPO="Oignontom8283/eadkp_template"
 BRANCH="main"
 DIR_NAME=".eadkp"
@@ -84,3 +88,6 @@ for file in "${!local_file_hashes[@]}"; do
         rm -f "$DIR_NAME/$file"
     fi
 done
+
+}
+exit 0
