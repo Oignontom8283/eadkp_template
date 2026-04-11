@@ -26,7 +26,7 @@ is_ignored_file() {
     local target="$1"
     
     # Always protect config.env natively, just in case a user removes it from the list by mistake
-    if [[ "$target" == "config.env" ]]; then
+    if [[ "$target" == "./$DIR_NAME/config.env" ]]; then
         return 0
     fi
     

@@ -77,7 +77,7 @@ mkdir -p "$DIR_NAME"
 
 # 1. Check remote files (to download or update)
 for file in "${!file_hashes[@]}"; do
-    if is_ignored_file "$file"; then
+    if is_ignored_file "./$DIR_NAME/$file"; then
         # Skip the ignored file from being overwritten by remote templates
         continue
     fi
@@ -101,7 +101,7 @@ chmod +x "$DIR_NAME"/*.sh 2>/dev/null || true
 
 # 2. Check local files (to delete if not present on the remote)
 for file in "${!local_file_hashes[@]}"; do
-    if is_ignored_file "$file"; then
+    if is_ignored_file "./$DIR_NAME/$file"; then
         # Ensure our local ignored files are never deleted even if absent from remote
         continue
     fi
@@ -135,7 +135,7 @@ root_json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/?re
 root_sh_scripts=$(echo "$root_json_response" | grep '"name":' | cut -d'"' -f4 | grep '\.sh$' || true)
 
 for launcher in $root_sh_scripts; do
-    if is_ignored_file "$launcher"; then
+    if is_ignored_file "./$launcher"; then
         continue
     fi
 
