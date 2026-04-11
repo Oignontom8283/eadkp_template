@@ -28,12 +28,16 @@ if [[ "$json_response" == "[]" ]]; then
     exit 0
 fi
 
-# Iterate over the JSON response with jq to extract the name and sha (hash) of each file
-while IFS=$'\t' read -r name sha; do
-    if [[ -n "$name" ]]; then
-        file_hashes["$name"]="$sha"
+# Extract file names, shas and types using grep/cut to completely avoid the 'jq' dependency
+names=( $(echo "$json_response" | grep '"name":' | cut -d'"' -f4) )
+shas=( $(echo "$json_response" | grep '"sha":' | cut -d'"' -f4) )
+types=( $(echo "$json_response" | grep '"type":' | cut -d'"' -f4) )
+
+for i in "${!names[@]}"; do
+    if [[ "${types[$i]}" == "file" ]]; then
+        file_hashes["${names[$i]}"]="${shas[$i]}"
     fi
-done < <(echo "$json_response" | jq -r 'if type=="array" then .[] | select(.type=="file") | [.name, .sha] | @tsv else empty end')
+done
 
 # # Display the dictionary content to verify the results
 # for file in "${!file_hashes[@]}"; do
@@ -124,7 +128,17 @@ fi
 echo ""
 echo "[Launchers] Verifying root launchers..."
 
-for launcher in docker.sh update.sh; do
+# Fetch the root directory content 
+root_json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/?ref=$BRANCH" || echo "[]")
+
+# Extract all names ending with .sh (using grep to avoid jq)
+root_sh_scripts=$(echo "$root_json_response" | grep '"name":' | cut -d'"' -f4 | grep '\.sh$' || true)
+
+for launcher in $root_sh_scripts; do
+    if is_ignored_file "$launcher"; then
+        continue
+    fi
+
     curl -s -L -o "$launcher.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$launcher"
     if [ -f "$launcher" ]; then
         if ! cmp -s "$launcher.tmp" "$launcher"; then
@@ -132,7 +146,7 @@ for launcher in docker.sh update.sh; do
             mv "$launcher.tmp" "$launcher"
             chmod +x "$launcher"
         else
-            rm "$launcher.tmp"
+            rm -f "$launcher.tmp"
         fi
     else
         echo "[Launchers] Restoring missing root launcher: $launcher"
