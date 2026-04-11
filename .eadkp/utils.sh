@@ -30,7 +30,12 @@ is_ignored_file() {
         return 0
     fi
     
-    for ignored in $IGNORE_FILES; do
+    # Read comma-separated ignore list
+    IFS=',' read -ra IGNORED_ARRAY <<< "$IGNORE_FILES"
+    for ignored in "${IGNORED_ARRAY[@]}"; do
+        # Trim leading/trailing whitespace
+        ignored="${ignored#"${ignored%%[![:space:]]*}"}"
+        ignored="${ignored%"${ignored##*[![:space:]]}"}"
         if [[ "$ignored" == "$target" ]]; then
             return 0
         fi
@@ -41,7 +46,8 @@ is_ignored_file() {
 
 # Function to extract the project name from Cargo.toml and export it
 export_project_name() {
-    export PROJECT_NAME=$(grep -m 1 '^name *=' Cargo.toml | cut -d '"' -f 2)
+    # Match both double and single quotes using sed
+    export PROJECT_NAME=$(grep -m 1 '^name *=' Cargo.toml | sed -E "s/^name *= *['\"]([^'\"]+)['\"].*/\1/")
 
     if [ -z "$PROJECT_NAME" ]; then
         echo "[Error] Could not find the project name in Cargo.toml."
