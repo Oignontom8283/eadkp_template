@@ -38,8 +38,8 @@ case "$COMMAND" in
              echo "[Warning] Failed to connect to the X server with xhost. GUI apps inside the container might not work."
         fi
         get_service_name
-        # Execute sh (POSIX compatible) inside the corresponding service container
-        docker compose exec -it "$SERVICE_NAME" bash "$@"
+        # Execute bash inside the corresponding service container (fallback to sh if bash is missing)
+        docker compose exec -it "$SERVICE_NAME" env TERM=xterm sh -c 'if command -v bash >/dev/null 2>&1; then exec bash "$@"; else exec sh "$@"; fi' -- "$@" # Complicate (˘･_･˘)
         ;;
     
     stop|down)
