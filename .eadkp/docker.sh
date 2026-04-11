@@ -24,17 +24,21 @@ case "$COMMAND" in
             echo "[Error] Docker could not be found. Please install Docker to proceed."
             exit 1
         fi
-        # Allow local connections to the X server (silencing errors if not in a GUI session)
-        xhost +local:docker >/dev/null 2>&1
+        # Allow local connections to the X server (warning if not in a GUI session)
+        if ! xhost +local:docker >/dev/null 2>&1; then
+             echo "[Warning] Failed to connect to the X server with xhost. GUI apps inside the container might not work."
+        fi
         # Start the Docker container with GUI support and pass all arguments
         docker compose up -d "$@"
         ;;
     
     shell|sh)
-        # Allow local connections to the X server
-        xhost +local:docker >/dev/null 2>&1
+        # Allow local connections to the X server (warning if not in a GUI session)
+        if ! xhost +local:docker >/dev/null 2>&1; then
+             echo "[Warning] Failed to connect to the X server with xhost. GUI apps inside the container might not work."
+        fi
         get_service_name
-        # Execute bash inside the corresponding service container
+        # Execute sh (POSIX compatible) inside the corresponding service container
         docker compose exec -it "$SERVICE_NAME" bash "$@"
         ;;
     

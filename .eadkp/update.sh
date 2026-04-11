@@ -21,17 +21,25 @@ declare -A file_hashes
 
 # Request the GitHub API to get the folder content
 # The -f option ignores HTTP errors (like 404) and returns an empty array
-json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/$DIR_NAME?ref=$BRANCH" || echo "[]")
+json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/$DIR_NAME?ref=$BRANCH" || echo "FAILED")
 
+if [[ "$json_response" == "FAILED" ]]; then
+    echo "[Remote] ERROR: Could not fetch from GitHub API. Please check your internet connection or API rate limits."
+    exit 1
+fi
 if [[ "$json_response" == "[]" ]]; then
     echo "[Remote] ERROR: The $DIR_NAME folder is empty or does not exist."
     exit 0
 fi
 
 # Extract file names, shas and types using grep/cut to completely avoid the 'jq' dependency
+# Setting IFS enables supporting filenames with spaces natively up to bash 3.2
+OLD_IFS="$IFS"
+IFS=$'\n'
 names=( $(echo "$json_response" | grep '"name":' | cut -d'"' -f4) )
 shas=( $(echo "$json_response" | grep '"sha":' | cut -d'"' -f4) )
 types=( $(echo "$json_response" | grep '"type":' | cut -d'"' -f4) )
+IFS="$OLD_IFS"
 
 for i in "${!names[@]}"; do
     if [[ "${types[$i]}" == "file" ]]; then
@@ -48,12 +56,24 @@ done
 # Get the list of files (name and hash) in the local '$DIR_NAME' folder
 declare -A local_file_hashes
 
+# Function to check if a file is a text file natively
+is_text_file() {
+    # grep -I ignores binary files. Thus if '.' matches, it's text. Fast and file-dependency free.
+    [[ -f "$1" ]] && head -c 1024 "$1" | grep -Iq .
+}
+
 if [[ -d "$DIR_NAME" ]]; then
     for filepath in "$DIR_NAME"/*; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
             # git hash-object calculates the SHA-1 exactly like GitHub
-            local_sha=$(git hash-object "$filepath")
+            # Ensure carriage returns (CRLF typically from WSL) don't falsify the blob hash by removing them
+            # but only for text files to avoid corrupting binary hashes
+            if is_text_file "$filepath"; then
+                local_sha=$(tr -d '\r' < "$filepath" | git hash-object --stdin)
+            else
+                local_sha=$(git hash-object "$filepath")
+            fi
             local_file_hashes["$filename"]="$local_sha"
         fi
     done
@@ -114,8 +134,13 @@ done
 
 
 # Update Cargo dependencies
-
 echo "[Dependencies] Updating Cargo dependencies..."
+
+if ! command -v just &> /dev/null; then
+    echo "[Dependencies] ERROR: the 'just' command is not installed."
+    echo "Please install just (https://github.com/casey/just) to proceed with dependencies update."
+    exit 1
+fi
 
 if just --yes update; then
     echo "[Dependencies] Cargo dependencies updated successfully."
@@ -129,12 +154,20 @@ echo ""
 echo "[Launchers] Verifying root launchers..."
 
 # Fetch the root directory content 
-root_json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/?ref=$BRANCH" || echo "[]")
+root_json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/?ref=$BRANCH" || echo "FAILED")
 
+if [[ "$root_json_response" == "FAILED" ]]; then
+    echo "[Launchers] ERROR: Could not fetch from GitHub API. Please check your internet connection or API rate limits."
+    exit 1
+fi
+
+OLD_IFS="$IFS"
+IFS=$'\n'
 # Extract all names ending with .sh (using grep to avoid jq)
-root_sh_scripts=$(echo "$root_json_response" | grep '"name":' | cut -d'"' -f4 | grep '\.sh$' || true)
+root_sh_scripts=( $(echo "$root_json_response" | grep '"name":' | cut -d'"' -f4 | grep '\.sh$' || true) )
+IFS="$OLD_IFS"
 
-for launcher in $root_sh_scripts; do
+for launcher in "${root_sh_scripts[@]}"; do
     if is_ignored_file "./$launcher"; then
         continue
     fi

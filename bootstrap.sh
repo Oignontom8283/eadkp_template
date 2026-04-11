@@ -10,10 +10,18 @@ PATH_GIVED=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --name|-n) # Argument --name
+            if [ -z "$2" ]; then
+                echo "Error: --name requires a value."
+                exit 1
+            fi
             PATH_GIVED="$2"
             shift 2
             ;;
-        --branch|-b) # Argument --branch
+        --branch) # Argument --branch
+            if [ -z "$2" ]; then
+                echo "Error: --branch requires a value."
+                exit 1
+            fi
             BRANCH="$2"
             shift 2
             ;;
@@ -117,7 +125,7 @@ cd "$PATH_GIVED" || { echo "Failed to change directory to '$PATH_GIVED'"; exit 1
 
 # Detect whether a git repository already existed before template operations
 PREEXISTING_GIT_REPO="false"
-if [[ -d .git ]]; then
+if [[ -e .git ]]; then
     PREEXISTING_GIT_REPO="true"
 fi
 
@@ -172,8 +180,9 @@ fi
 # Extract the list of excluded files from cargo-generate.toml dynamically
 EXCLUDE_FILES=()
 if [[ -f "cargo-generate.toml" ]]; then
-    # Use a more robust approach to parse the exclude array
-    EXCLUDE_FILES=($(grep -oP '(?<=exclude = \[)[^\]]*' cargo-generate.toml | tr -d '"' | tr ',' ' ' | tr -s ' '))
+    # Use awk to handle potential multi-line exclude arrays correctly
+    exclude_str=$(awk '/exclude *= *\[/ {flag=1} flag; /\]/ {flag=0}' cargo-generate.toml | tr -d '\n\r"[' | sed 's/exclude=//' | tr -d ']' | tr ',' ' ' | tr -s ' ')
+    read -ra EXCLUDE_FILES <<< "$exclude_str"
 else
     echo "Warning: cargo-generate.toml not found, no files will be excluded from replacement"
 fi
@@ -196,9 +205,10 @@ is_excluded() {
     return 1 # Non exclu
 }
 
-# Function to check if a file is a text file
+# Function to check if a file is a text file natively
 is_text_file() {
-    [[ -f "$1" ]] && file "$1" 2>/dev/null | grep -q "text"
+    # grep -I ignores binary files. Thus if '.' matches, it's text. Fast and file-dependency free.
+    [[ -f "$1" ]] && head -c 1024 "$1" | grep -Iq .
 }
 
 FILES_REMPLACED=0
@@ -210,7 +220,7 @@ UNEXPECTED_FILES_NOT_REPLACED=0
 while IFS= read -r -d '' file; do
     
     # Skip excluded files
-    if is_excluded "$file"; then
+    if is_ignored_file "$file" 2>/dev/null || is_excluded "$file"; then
         FILES_NOT_REPLACED=$((FILES_NOT_REPLACED + 1))
         continue
     fi
@@ -227,8 +237,8 @@ while IFS= read -r -d '' file; do
         continue  # Skip files without the pattern (not counted)
     fi
     
-    # Perform the replacement
-    if sed -i "s/{{project-name}}/$FORMATTED_CARGO_NAME/g" "$file"; then
+    # Perform the replacement using a portable sed method
+    if sed "s/{{project-name}}/$FORMATTED_CARGO_NAME/g" "$file" > "$file.tmp" && mv "$file.tmp" "$file"; then
         FILES_REMPLACED=$((FILES_REMPLACED + 1))
     else
         echo "Error: Failed to update $file"
