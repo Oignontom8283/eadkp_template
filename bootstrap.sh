@@ -17,7 +17,7 @@ while [[ "$#" -gt 0 ]]; do
             PATH_GIVED="$2"
             shift 2
             ;;
-        --branch) # Argument --branch
+        --branch|-b) # Argument --branch
             if [ -z "$2" ]; then
                 echo "Error: --branch requires a value."
                 exit 1
