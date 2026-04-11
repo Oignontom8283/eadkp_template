@@ -267,11 +267,29 @@ echo "Removed temporary files."
 if [[ "$PREEXISTING_GIT_REPO" == "true" ]]; then
     echo "Existing git repository detected. Keeping current .git directory."
 else
+    # Always completely remove the template's .git folder to start fresh
     rm -rf .git
-    if ! git init --quiet >/dev/null 2>&1; then
+    
+    # Initialize with 'main' as default branch (GitHub style), with fallback for older git versions
+    if ! { git init --quiet -b main >/dev/null 2>&1 || { git init --quiet >/dev/null 2>&1 && git symbolic-ref HEAD refs/heads/main >/dev/null 2>&1; }; }; then
         echo "Warning: Failed to initialize new git repository"
     else
-        echo "Created git repository."
+        # Try to guess GitHub username
+        GITHUB_USER=$(git config --global user.username || git config --global user.name || true)
+        # Remove any spaces just in case
+        GITHUB_USER=$(echo "$GITHUB_USER" | tr -d ' ')
+        
+        # Create an initial commit with the template files, acting like a GitHub fresh repository
+        git add . >/dev/null 2>&1
+        git commit -m "Initial commit" --quiet >/dev/null 2>&1 || true
+
+        if [[ -n "$GITHUB_USER" ]]; then
+            # Set the remote origin to a GitHub-like URL
+            git remote add origin "https://github.com/${GITHUB_USER}/${FORMATTED_CARGO_NAME}.git" >/dev/null 2>&1 || true
+            echo "Created git repository (branch 'main' with initial commit) pointing to origin https://github.com/${GITHUB_USER}/${FORMATTED_CARGO_NAME}.git."
+        else
+            echo "Created git repository (branch 'main' with initial commit)."
+        fi
     fi
 fi
 
