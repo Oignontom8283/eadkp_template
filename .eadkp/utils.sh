@@ -30,30 +30,39 @@ get_absolute_path() {
 
 # Function to check if a file should be ignored from updates
 is_ignored_file() {
-    local target=$(get_absolute_path "$1")
+    local raw_target="$1"
+    local target=$(get_absolute_path "$raw_target")
     
-    # Always protect config.env natively, just in case a user removes it from the list by mistake
-    local config_path=$(get_absolute_path "$DIR_NAME/config.env")
-    if [[ "$target" == "$config_path" ]]; then
+    # Sécurité : Si le chemin ne peut pas être résolu, on ne prend pas de risque
+    [[ -z "$target" ]] && return 1
+    
+    # 1. Protection native config.env (utilisation de défaut si DIR_NAME vide)
+    local config_path=$(get_absolute_path "${DIR_NAME:-.eadkp}/config.env")
+    if [[ -n "$config_path" && "$target" == "$config_path" ]]; then
         return 0
     fi
     
-    # Read comma-separated ignore list
-    IFS=',' read -ra IGNORED_ARRAY <<< "$IGNORE_FILES"
-    for ignored in "${IGNORED_ARRAY[@]}"; do
-        # Trim leading/trailing whitespace
-        ignored="${ignored#"${ignored%%[![:space:]]*}"}"
-        ignored="${ignored%"${ignored##*[![:space:]]}"}"
-        
-        # Resolve ignored to absolute, formatted path
-        ignored=$(get_absolute_path "$ignored")
-        
-        if [[ "$ignored" == "$target" ]]; then
-            return 0
-        fi
-    done
+    # 2. Vérification de la liste
+    [[ -z "$IGNORE_FILES" ]] && return 1
     
-    return 1
+    # Utilisation d'un séparateur local pour IFS pour ne pas polluer le reste du script
+    (
+        IFS=','
+        for entry in $IGNORE_FILES; do
+            # Trim manuel sans sous-processus pour la performance
+            entry="${entry#"${entry%%[![:space:]]*}"}"
+            entry="${entry%"${entry##*[![:space:]]}"}"
+            
+            [[ -z "$entry" ]] && continue
+            
+            local resolved_entry=$(get_absolute_path "$entry")
+            if [[ -n "$resolved_entry" && "$target" == "$resolved_entry" ]]; then
+                exit 0 # Trouvé !
+            fi
+        done
+        exit 1 # Non trouvé
+    )
+    return $?
 }
 
 # Function to extract the project name from Cargo.toml and export it
