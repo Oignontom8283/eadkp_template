@@ -8,6 +8,22 @@
 source .eadkp/utils.sh
 load_config
 
+# Verify required dependencies before proceeding
+REQUIRED_CMDS=("curl" "git" "realpath" "cmp" "just" "tr" "head" "sed" "grep" "cut")
+MISSING_CMDS=()
+for cmd in "${REQUIRED_CMDS[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        MISSING_CMDS+=("$cmd")
+    fi
+done
+
+if [ ${#MISSING_CMDS[@]} -ne 0 ]; then
+    echo "[Dependencies] ERROR: The following required commands are missing: ${MISSING_CMDS[*]}"
+    echo "Note: 'realpath' is not installed by default on macOS (can be installed via 'brew install coreutils')."
+    echo "Note: 'just' must be installed manually (https://github.com/casey/just)."
+    exit 1
+fi
+
 # Safety check to prevent running the script directly from within its folder
 if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
     echo "[Safety] Please run the update script from the root directory of the project."
@@ -135,12 +151,6 @@ done
 
 # Update Cargo dependencies
 echo "[Dependencies] Updating Cargo dependencies..."
-
-if ! command -v just &> /dev/null; then
-    echo "[Dependencies] ERROR: the 'just' command is not installed."
-    echo "Please install just (https://github.com/casey/just) to proceed with dependencies update."
-    exit 1
-fi
 
 if just --yes update; then
     echo "[Dependencies] Cargo dependencies updated successfully."
