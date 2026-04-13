@@ -123,10 +123,12 @@ for file in "${!file_hashes[@]}"; do
 
     if [[ -z "$local_sha" ]]; then
         echo "[Updating] Downloading new file: $file"
-        curl -s -L -o "$DIR_NAME/$file" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
+        curl -s -L -o "$DIR_NAME/$file.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
+        mv "$DIR_NAME/$file.tmp" "$DIR_NAME/$file"
     elif [[ "$remote_sha" != "$local_sha" ]]; then
         echo "[Updating] Updating modified file: $file"
-        curl -s -L -o "$DIR_NAME/$file" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
+        curl -s -L -o "$DIR_NAME/$file.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
+        mv "$DIR_NAME/$file.tmp" "$DIR_NAME/$file"
     else
         echo "[Updating] The file $file is up to date."
     fi
