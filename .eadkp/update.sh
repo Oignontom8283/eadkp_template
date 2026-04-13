@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Enclosing the entire script in a block ensures Bash loads everything 
-# into memory before executing, preventing issues if the script changes itself.
-{
+# Wrapping the entire logic in a function ensures Bash parses and loads 
+# everything into memory before execution, preventing EOF errors during self-updates.
+main() {
 
 # Load external configuration if present
 source .eadkp/utils.sh
@@ -208,4 +208,7 @@ echo "Updating process completed successfully!"
 echo ""
 
 }
+
+# Execute the main payload that's now entirely loaded in memory
+main "$@"
 exit 0
