@@ -21,12 +21,20 @@ load_config() {
     fi
 }
 
+# Function to logically resolve a path to an absolute path
+get_absolute_path() {
+    # Use realpath -m (or readlink -m as fallback) to resolve paths efficiently
+    # The -m option ensures it works even if the file/directory doesn't exist yet
+    realpath -m "$1" 2>/dev/null || readlink -m "$1"
+}
+
 # Function to check if a file should be ignored from updates
 is_ignored_file() {
-    local target="$1"
+    local target=$(get_absolute_path "$1")
     
     # Always protect config.env natively, just in case a user removes it from the list by mistake
-    if [[ "$target" == "./$DIR_NAME/config.env" ]]; then
+    local config_path=$(get_absolute_path "$DIR_NAME/config.env")
+    if [[ "$target" == "$config_path" ]]; then
         return 0
     fi
     
@@ -36,6 +44,10 @@ is_ignored_file() {
         # Trim leading/trailing whitespace
         ignored="${ignored#"${ignored%%[![:space:]]*}"}"
         ignored="${ignored%"${ignored##*[![:space:]]}"}"
+        
+        # Resolve ignored to absolute, formatted path
+        ignored=$(get_absolute_path "$ignored")
+        
         if [[ "$ignored" == "$target" ]]; then
             return 0
         fi
