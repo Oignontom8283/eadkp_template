@@ -28,6 +28,19 @@ case "$COMMAND" in
         if ! xhost +local:docker >/dev/null 2>&1; then
              echo "[Warning] Failed to connect to the X server with xhost. GUI apps inside the container might not work."
         fi
+
+        # Export user IDs for proper file permissions inside the container
+        export HOST_UID=$(id -u)
+        export HOST_GID=$(id -g)
+
+        # Ensure XDG_RUNTIME_DIR is set for Wayland fallback
+        export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$HOST_UID}
+
+        # Ensure the Wakaatime config file exists
+        if [ ! -f "$HOME/.wakatime.cfg" ]; then
+            touch "$HOME/.wakatime.cfg"
+        fi
+
         # Start the Docker container with GUI support and pass all arguments
         docker compose up -d "$@"
         ;;
@@ -38,8 +51,8 @@ case "$COMMAND" in
              echo "[Warning] Failed to connect to the X server with xhost. GUI apps inside the container might not work."
         fi
         get_service_name
-        # Execute bash inside the corresponding service container (fallback to sh if bash is missing)
-        docker compose exec -it "$SERVICE_NAME" env TERM=xterm sh -c 'if command -v bash >/dev/null 2>&1; then exec bash "$@"; else exec sh "$@"; fi' -- "$@" # Complicate (˘･_･˘)
+        # Execute bash inside the corresponding service container
+        docker compose exec -it "$SERVICE_NAME" bash "$@"
         ;;
     
     stop|down)
