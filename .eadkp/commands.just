@@ -36,8 +36,8 @@ sim jobs="1":
     just build_simulator
     if [ -d "{{simulator_dir}}" ]; then \
         cd {{simulator_dir}}; \
-        rm -r .git 2>/dev/null;\
-        make PLATFORM=simulator -j {{jobs}}; \
+        sudo rm -rf .git; \
+        sudo make PLATFORM=simulator -j {{jobs}}; \
         cd ..; \
     fi
     just run_nwb
