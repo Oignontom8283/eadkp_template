@@ -7,10 +7,13 @@ services:
     working_dir: /workspace/${PROJECT_NAME}
     volumes:
       - ./:/workspace/${PROJECT_NAME}
-    device_cgroup_rules:
-      - 'c 189:* rmw'   # All USB devices (major 189)
-      - 'c 166:* rmw'   # ttyACM devices (kernel-dependent / not always required)
-      - 'c 204:* rmw'   # ttyAMA or alternatives (kernel-dependent)
+      # Cargo registry and git cache
+      - cargo-registry:/home/dev/.cargo/registry
+      - cargo-git:/home/dev/.cargo/git
+
+volumes:
+  cargo-registry:
+  cargo-git:
 
 # X11 and Wayland support (on Linux hosts).
 # For Windows/WSL2, WSL2 integrate a X server
