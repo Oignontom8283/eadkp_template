@@ -71,18 +71,6 @@ case "$COMMAND" in
         get_service_name
         docker compose logs -f "$SERVICE_NAME" "$@"
         ;;
-
-    code|vscode)
-        
-        if ! command -v devcontainer &> /dev/null; then
-            echo "[Error] devcontainer CLI not found. Install it with: npm install -g @devcontainers/cli"
-            exit 1
-        fi
-
-        echo "[Info] Opening VS Code in Dev Container via official CLI..."
-        
-        devcontainer open .
-        ;;
         
     *)
         echo "Usage: ./docker.sh {start|shell|stop|restart|remove|logs} [args...]"
