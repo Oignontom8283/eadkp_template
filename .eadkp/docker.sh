@@ -72,6 +72,27 @@ case "$COMMAND" in
         docker compose logs -f "$SERVICE_NAME" "$@"
         ;;
 
+    code|vscode)
+        # Check xdd is installed
+        if ! command -v xxd &> /dev/null; then
+            echo "[Error] 'xxd' is required to calculate the container URI. Please install it (sudo apt install xxd)."
+            exit 1
+        fi
+
+        # Check if VS Code is installed
+        if ! command -v code &> /dev/null; then
+            echo "[Error] 'code' command not found. Ensure VS Code is installed and in your PATH."
+            exit 1
+        fi
+
+        echo "[Info] Opening VS Code in Dev Container..."
+        
+        URI=$(get_devcontainer_uri)
+        
+        # Open Vs Code with the remote
+        code --folder-uri "$URI" &
+        ;;
+        
     *)
         echo "Usage: ./docker.sh {start|shell|stop|restart|remove|logs} [args...]"
         echo "  start   - Starts the docker container in exactly the same way as the old start.sh."
