@@ -73,24 +73,15 @@ case "$COMMAND" in
         ;;
 
     code|vscode)
-        # Check xdd is installed
-        if ! command -v xxd &> /dev/null; then
-            echo "[Error] 'xxd' is required to calculate the container URI. Please install it (sudo apt install xxd)."
-            exit 1
-        fi
-
-        # Check if VS Code is installed
-        if ! command -v code &> /dev/null; then
-            echo "[Error] 'code' command not found. Ensure VS Code is installed and in your PATH."
-            exit 1
-        fi
-
-        echo "[Info] Opening VS Code in Dev Container..."
+        local abs_path=$(realpath ".")
+        local hex_path=$(echo -n "$abs_path" | xxd -p | tr -d '\n')
+        local folder_name=$(basename "$abs_path")
         
-        URI=$(get_devcontainer_uri)
+        local target="dev-container+${hex_path}"
         
-        # Open Vs Code with the remote
-        code --folder-uri "$URI" &
+        echo "[Info] Opening VS Code in Dev Container (WSL Context)..."
+        
+        code --folder-uri "vscode-remote://${target}/workspaces/${folder_name}"
         ;;
         
     *)
