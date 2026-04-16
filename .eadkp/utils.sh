@@ -78,13 +78,9 @@ export_project_name() {
 
 
 get_devcontainer_uri() {
-    # Get absolute path of current dir
     local abs_path=$(realpath ".")
-    local folder_name=$(basename "$abs_path")
-    
-    # convert to hex format (xxd is normally installed by default)
+
     local hex_path=$(echo -n "$abs_path" | xxd -p | tr -d '\n')
     
-    # The URI is identical for native Linux and WSL
-    echo "vscode-remote://dev-container+${hex_path}/workspaces/${folder_name}"
+    echo "vscode-remote://dev-container+${hex_path}/workspaces/${PROJECT_NAME}"
 }
