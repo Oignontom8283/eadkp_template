@@ -74,20 +74,14 @@ case "$COMMAND" in
 
     code|vscode)
         
-        if ! command -v xxd &> /dev/null; then
-            echo "[Error] 'xxd' is required. Install it with: sudo apt install xxd"
+        if ! command -v devcontainer &> /dev/null; then
+            echo "[Error] devcontainer CLI not found. Install it with: npm install -g @devcontainers/cli"
             exit 1
         fi
 
-        echo "[Info] Opening VS Code in Dev Container..."
-
-        ABS_PATH=$(realpath ".")
-        HEX_PATH=$(echo -n "$ABS_PATH" | xxd -p | tr -d '\n')
-        FOLDER_NAME=$(basename "$ABS_PATH")
+        echo "[Info] Opening VS Code in Dev Container via official CLI..."
         
-        URI="vscode-remote://dev-container+${HEX_PATH}/workspaces/${FOLDER_NAME}"
-
-        code --folder-uri "$URI"
+        devcontainer open .
         ;;
         
     *)

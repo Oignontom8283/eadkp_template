@@ -75,14 +75,3 @@ export_project_name() {
         exit 1
     fi
 }
-
-
-get_devcontainer_uri() {
-    local abs_path=$(realpath ".")
-
-    local distro=$WSL_DISTRO_NAME
-    
-    local hex_path=$(echo -n "$abs_path" | xxd -p | tr -d '\n')
-    
-    echo "vscode-remote://dev-container+${hex_path}/workspaces/${PROJECT_NAME}"
-}
