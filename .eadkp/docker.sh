@@ -73,15 +73,21 @@ case "$COMMAND" in
         ;;
 
     code|vscode)
-        local abs_path=$(realpath ".")
-        local hex_path=$(echo -n "$abs_path" | xxd -p | tr -d '\n')
-        local folder_name=$(basename "$abs_path")
         
-        local target="dev-container+${hex_path}"
+        if ! command -v xxd &> /dev/null; then
+            echo "[Error] 'xxd' is required. Install it with: sudo apt install xxd"
+            exit 1
+        fi
+
+        echo "[Info] Opening VS Code in Dev Container..."
+
+        ABS_PATH=$(realpath ".")
+        HEX_PATH=$(echo -n "$ABS_PATH" | xxd -p | tr -d '\n')
+        FOLDER_NAME=$(basename "$ABS_PATH")
         
-        echo "[Info] Opening VS Code in Dev Container (WSL Context)..."
-        
-        code --folder-uri "vscode-remote://${target}/workspaces/${folder_name}"
+        URI="vscode-remote://dev-container+${HEX_PATH}/workspaces/${FOLDER_NAME}"
+
+        code --folder-uri "$URI"
         ;;
         
     *)
