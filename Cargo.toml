@@ -8,7 +8,6 @@ path = "src/main.rs"
 bench = false
 test = false
 crate-type = ["rlib", "cdylib"]
-name = "{{project-name}}"
 
 [[example]]
 name = "device"
