@@ -26,7 +26,7 @@ bench = false
 crate-type = ["cdylib"]
 
 [dependencies]
-eadkp = { git = "https://github.com/Oignontom8283/eadkp", branch = "dev" }
+eadkp = "0.20.0"
 embedded-alloc = "0.7.0"
 postcard = "1"
 serde = { version = "1", default-features = false, features = ["derive"] }
