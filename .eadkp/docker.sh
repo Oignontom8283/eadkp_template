@@ -55,7 +55,11 @@ case "$COMMAND" in
         docker compose exec -it "$SERVICE_NAME" bash "$@"
         ;;
     
-    stop|down)
+    stop)
+        docker compose stop "$@"
+        ;;
+        
+    down)
         docker compose down "$@"
         ;;
 
