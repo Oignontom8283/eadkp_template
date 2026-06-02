@@ -130,4 +130,10 @@ case "$COMMAND" in
         echo "  shell   - Opens a bash shell within the running container."
         echo "  stop    - Stops and removes the container and network (down)."
         echo "  restart - Restarts the container."
-        echo "  remove  - Stops and removes containers, le
+        echo "  remove  - Stops and removes containers, leaving networks intact."
+        echo "  logs    - Tails the container logs."
+        echo "  open    - Opens an IDE attached to the running container."
+        echo "            Subcommands: code [workspace_path]"
+        exit 1
+        ;;
+esac
