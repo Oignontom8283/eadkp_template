@@ -118,7 +118,7 @@ case "$COMMAND" in
             *)
                 echo "Usage: ./docker.sh open {code} [workspace_path]"
                 echo "  code  - Opens VS Code attached to the running container."
-                echo "          workspace_path defaults to /workspace/$PROJECT_NAME"
+                echo "          workspace_path defaults to /workspace/${PROJECT_NAME}"
                 exit 1
                 ;;
         esac
