@@ -93,9 +93,13 @@ pub fn main() -> isize {
             actualize = true;
         }
 
+        // ------------------------------------------------------------------------- }
+
         // Wait for the vertical blank before pushing pixels to the screen.
         // This prevents tearing and keeps rendering in sync with the display.
         eadkp::display::wait_for_vblank();
+
+        // ------------------------------------------------------------------------- {
 
         // Redraw the counter only when its value has changed.
         if actualize {
