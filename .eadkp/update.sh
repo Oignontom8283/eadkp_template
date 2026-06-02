@@ -203,7 +203,7 @@ for launcher in "${root_sh_scripts[@]}"; do
     fi
 
     curl -s -L -o "$launcher.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$launcher"
-    printf "[Launchers] %-34s" "$launcher"
+    printf "[Launchers] %-35s" "$launcher"
     if [ -f "$launcher" ]; then
         if ! cmp -s "$launcher.tmp" "$launcher"; then
             mv "$launcher.tmp" "$launcher"
