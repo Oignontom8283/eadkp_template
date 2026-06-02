@@ -8,6 +8,16 @@ main() {
 source .eadkp/utils.sh
 load_config
 
+fmt_ok()      { echo -e "${BOLD}${GREEN}[OK]${RESET}"; }
+fmt_updated() { echo -e "${BOLD}${ORANGE}[UPDATED]${RESET}"; }
+fmt_new()     { echo -e "${BOLD}${ORANGE}[NEW]${RESET}"; }
+fmt_deleted() { echo -e "${BOLD}${RED}[DELETED]${RESET}"; }
+fmt_success() { echo -e "${BOLD}${GREEN}$1${RESET}"; }
+
+is_truthy() {
+    [[ "$1" == "true" || "$1" == "1" ]]
+}
+
 # Verify required dependencies before proceeding
 REQUIRED_CMDS=("curl" "git" "realpath" "cmp" "just" "tr" "head" "sed" "grep" "cut")
 MISSING_CMDS=()
@@ -30,13 +40,10 @@ if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
     exit 1
 fi
 
-# Get the list of files (name and hash) in the '$DIR_NAME' folder from the repo https://github.com/$REPO.git
-
 # Declare a dictionary (associative array in bash)
 declare -A file_hashes
 
 # Request the GitHub API to get the folder content
-# The -f option ignores HTTP errors (like 404) and returns an empty array
 json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/$DIR_NAME?ref=$BRANCH" || echo "FAILED")
 
 if [[ "$json_response" == "FAILED" ]]; then
@@ -82,9 +89,6 @@ if [[ -d "$DIR_NAME" ]]; then
     for filepath in "$DIR_NAME"/*; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
-            # git hash-object calculates the SHA-1 exactly like GitHub
-            # Ensure carriage returns (CRLF typically from WSL) don't falsify the blob hash by removing them
-            # but only for text files to avoid corrupting binary hashes
             if is_text_file "$filepath"; then
                 local_sha=$(tr -d '\r' < "$filepath" | git hash-object --stdin)
             else
@@ -97,40 +101,30 @@ else
     echo "[Local] ERROR: The folder $DIR_NAME does not exist."
 fi
 
-# # Display the local dictionary content
-# for file in "${!local_file_hashes[@]}"; do
-#     echo "$file: ${local_file_hashes[$file]}"
-# done
 
-
-# Compare the two dictionaries
-# If a file was modified, replace it;
-# If it doesn't exist, download it; If it doesn't exist on the remote, delete it.
-# Display the actions performed for each file
-
-# Create the local folder if it doesn't exist so we can write into it
+# Compare the two dictionaries and apply changes
 mkdir -p "$DIR_NAME"
 
 # 1. Check remote files (to download or update)
 for file in "${!file_hashes[@]}"; do
     if is_ignored_file "./$DIR_NAME/$file"; then
-        # Skip the ignored file from being overwritten by remote templates
         continue
     fi
 
     remote_sha="${file_hashes[$file]}"
     local_sha="${local_file_hashes[$file]}"
 
+    printf "[Updating] %-35s" "$file"
     if [[ -z "$local_sha" ]]; then
-        echo "[Updating] Downloading new file: $file"
         curl -s -L -o "$DIR_NAME/$file.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
         mv "$DIR_NAME/$file.tmp" "$DIR_NAME/$file"
+        fmt_new
     elif [[ "$remote_sha" != "$local_sha" ]]; then
-        echo "[Updating] Updating modified file: $file"
         curl -s -L -o "$DIR_NAME/$file.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$DIR_NAME/$file"
         mv "$DIR_NAME/$file.tmp" "$DIR_NAME/$file"
+        fmt_updated
     else
-        echo "[Updating] The file $file is up to date."
+        fmt_ok
     fi
 done
 
@@ -145,27 +139,33 @@ for file in "${!local_file_hashes[@]}"; do
     fi
 
     if [[ -z "${file_hashes[$file]}" ]]; then
-        echo "[Updating] Deleting file that no longer exists on the remote: $file"
+        printf "[Updating] %-35s" "$file"
         rm -f "$DIR_NAME/$file"
+        fmt_deleted
     fi
 done
 
 
 # Update Cargo dependencies
-echo "[Dependencies] Updating Cargo dependencies..."
-
-if just --yes update; then
-    echo "[Dependencies] Cargo dependencies updated successfully."
+echo ""
+if is_truthy "$IS_NOT_UPDATE_CARGO_DEPENDENCIES"; then
+    echo "[Dependencies] Skipping Cargo dependencies update."
 else
-    echo "[Dependencies] ERROR: Failed to update Cargo dependencies."
-    exit 1
+    echo "[Dependencies] Updating Cargo dependencies..."
+    if just --yes update; then
+        echo "[Dependencies] Cargo dependencies updated successfully."
+    else
+        echo "[Dependencies] ERROR: Failed to update Cargo dependencies."
+        exit 1
+    fi
 fi
+
 
 # Verify and auto-restore the root launchers
 echo ""
 echo "[Launchers] Verifying root launchers..."
 
-# Fetch the root directory content 
+# Fetch the root directory content
 root_json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/?ref=$BRANCH" || echo "FAILED")
 
 if [[ "$root_json_response" == "FAILED" ]]; then
@@ -185,26 +185,27 @@ for launcher in "${root_sh_scripts[@]}"; do
     fi
 
     curl -s -L -o "$launcher.tmp" "https://raw.githubusercontent.com/$REPO/$BRANCH/$launcher"
+    printf "[Launchers] %-35s" "$launcher"
     if [ -f "$launcher" ]; then
         if ! cmp -s "$launcher.tmp" "$launcher"; then
-            echo "[Launchers] Updating modified root launcher: $launcher"
             mv "$launcher.tmp" "$launcher"
             chmod +x "$launcher"
+            fmt_updated
         else
             rm -f "$launcher.tmp"
+            fmt_ok
         fi
     else
-        echo "[Launchers] Restoring missing root launcher: $launcher"
         mv "$launcher.tmp" "$launcher"
         chmod +x "$launcher"
+        fmt_new
     fi
 done
 
 
 # Final message
-
 echo ""
-echo "Updating process completed successfully!"
+fmt_success "Updating process completed successfully!"
 echo ""
 
 }
