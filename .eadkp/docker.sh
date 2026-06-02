@@ -27,6 +27,17 @@ get_container_id() {
     fi
 }
 
+# Function to check that the container is running before executing a command
+require_running() {
+    get_service_name
+    STATUS=$(docker compose ps --status running -q "$SERVICE_NAME" 2>/dev/null | head -n 1)
+    if [ -z "$STATUS" ]; then
+        echo "[Error] The container is not running. Please start it first with:"
+        echo "  ./docker.sh start"
+        exit 1
+    fi
+}
+
 case "$COMMAND" in
     start|up)
         # Check docker is installed
@@ -52,6 +63,7 @@ case "$COMMAND" in
         ;;
     
     shell|sh)
+        require_running
         # Allow local connections to the X server (warning if not in a GUI session)
         if ! xhost +local:docker >/dev/null 2>&1; then
              echo "[Warning] Failed to connect to the X server with xhost. GUI apps inside the container might not work."
@@ -62,24 +74,33 @@ case "$COMMAND" in
         ;;
     
     stop)
+        require_running
         docker compose stop "$@"
         ;;
         
     down)
+        require_running
         docker compose down "$@"
         ;;
+
     restart)
+        require_running
         docker compose restart "$@"
         ;;
+
     remove|rm)
+        require_running
         docker compose rm -f -s -v "$@"
         ;;
+
     logs)
+        require_running
         get_service_name
         docker compose logs -f "$SERVICE_NAME" "$@"
         ;;
 
     open)
+        require_running
         SUBCOMMAND=$1
         shift
         case "$SUBCOMMAND" in
@@ -109,10 +130,4 @@ case "$COMMAND" in
         echo "  shell   - Opens a bash shell within the running container."
         echo "  stop    - Stops and removes the container and network (down)."
         echo "  restart - Restarts the container."
-        echo "  remove  - Stops and removes containers, leaving networks intact."
-        echo "  logs    - Tails the container logs."
-        echo "  open    - Opens an IDE attached to the running container."
-        echo "            Subcommands: code [workspace_path]"
-        exit 1
-        ;;
-esac
+        echo "  remove  - Stops and removes containers, le
