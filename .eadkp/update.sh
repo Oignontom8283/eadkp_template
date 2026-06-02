@@ -8,10 +8,11 @@ main() {
 source .eadkp/utils.sh
 load_config
 
-fmt_ok()      { echo -e "${BOLD}${GREEN}[OK]${RESET}"; }
-fmt_updated() { echo -e "${BOLD}${ORANGE}[UPDATED]${RESET}"; }
-fmt_new()     { echo -e "${BOLD}${ORANGE}[NEW]${RESET}"; }
-fmt_deleted() { echo -e "${BOLD}${RED}[DELETED]${RESET}"; }
+# ── Formatting helpers (local to update.sh) ───────────────────────────────────
+fmt_ok()      { echo -e "[${BOLD}${GREEN}OK${RESET}]"; }
+fmt_updated() { echo -e "[${BOLD}${ORANGE}UPDATED${RESET}]"; }
+fmt_new()     { echo -e "[${BOLD}${ORANGE}NEW${RESET}]"; }
+fmt_deleted() { echo -e "[${BOLD}${RED}DELETED${RESET}]"; }
 fmt_success() { echo -e "${BOLD}${GREEN}$1${RESET}"; }
 
 is_truthy() {
@@ -40,10 +41,13 @@ if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
     exit 1
 fi
 
+# Get the list of files (name and hash) in the '$DIR_NAME' folder from the repo https://github.com/$REPO.git
+
 # Declare a dictionary (associative array in bash)
 declare -A file_hashes
 
 # Request the GitHub API to get the folder content
+# The -f option ignores HTTP errors (like 404) and returns an empty array
 json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/$DIR_NAME?ref=$BRANCH" || echo "FAILED")
 
 if [[ "$json_response" == "FAILED" ]]; then
@@ -89,6 +93,9 @@ if [[ -d "$DIR_NAME" ]]; then
     for filepath in "$DIR_NAME"/*; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
+            # git hash-object calculates the SHA-1 exactly like GitHub
+            # Ensure carriage returns (CRLF typically from WSL) don't falsify the blob hash by removing them
+            # but only for text files to avoid corrupting binary hashes
             if is_text_file "$filepath"; then
                 local_sha=$(tr -d '\r' < "$filepath" | git hash-object --stdin)
             else
@@ -101,13 +108,24 @@ else
     echo "[Local] ERROR: The folder $DIR_NAME does not exist."
 fi
 
+# # Display the local dictionary content
+# for file in "${!local_file_hashes[@]}"; do
+#     echo "$file: ${local_file_hashes[$file]}"
+# done
 
-# Compare the two dictionaries and apply changes
+
+# Compare the two dictionaries
+# If a file was modified, replace it;
+# If it doesn't exist, download it; If it doesn't exist on the remote, delete it.
+# Display the actions performed for each file
+
+# Create the local folder if it doesn't exist so we can write into it
 mkdir -p "$DIR_NAME"
 
 # 1. Check remote files (to download or update)
 for file in "${!file_hashes[@]}"; do
     if is_ignored_file "./$DIR_NAME/$file"; then
+        # Skip the ignored file from being overwritten by remote templates
         continue
     fi
 
@@ -159,13 +177,13 @@ else
         exit 1
     fi
 fi
+echo ""
 
 
 # Verify and auto-restore the root launchers
-echo ""
 echo "[Launchers] Verifying root launchers..."
 
-# Fetch the root directory content
+# Fetch the root directory content 
 root_json_response=$(curl -s -f "https://api.github.com/repos/$REPO/contents/?ref=$BRANCH" || echo "FAILED")
 
 if [[ "$root_json_response" == "FAILED" ]]; then
