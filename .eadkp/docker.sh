@@ -134,6 +134,22 @@ case "$COMMAND" in
                 ;;
         esac
         ;;
+
+    status)
+        get_service_name
+        # Check if the container is running without triggering 'exit 1' as require_running does
+        IS_RUNNING=$(docker compose ps --status running -q "$SERVICE_NAME" 2>/dev/null | head -n 1)
+
+        if [ -z "$IS_RUNNING" ]; then
+            echo "[Status] 🔴 The container $SERVICE_NAME is currently STOPPED."
+        else
+            echo "[Status] 🟢 The container $SERVICE_NAME is RUNNING."
+            echo "--------------------------------------------------------"
+            get_container_id
+            # Use --no-stream to show an immediate snapshot without blocking the terminal
+            docker stats --no-stream "$CONTAINER_ID"
+        fi
+        ;;
         
     *)
         echo "Usage: ./docker.sh {start|shell|stop|restart|remove|logs|open} [args...]"
