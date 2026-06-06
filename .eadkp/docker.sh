@@ -38,6 +38,13 @@ require_running() {
     fi
 }
 
+
+# Check that the script is not executed inside the Docker container
+if grep -qi "docker\|kubepods" /proc/1/cgroup 2>/dev/null; then
+    echo "[Error] This utility is intended to be run on the host, not inside a Docker container. Please run it from your local terminal."
+    exit 1
+fi
+
 case "$COMMAND" in
     start|up)
         # Check docker is installed
