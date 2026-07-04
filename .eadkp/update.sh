@@ -5,6 +5,7 @@
 main() {
 
 # Load external configuration if present
+chmod +x .eadkp/utils.sh
 source .eadkp/utils.sh
 load_config
 
