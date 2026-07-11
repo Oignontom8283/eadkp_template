@@ -21,7 +21,7 @@ is_truthy() {
 }
 
 # Verify required dependencies before proceeding
-REQUIRED_CMDS=("curl" "git" "realpath" "cmp" "just" "tr" "head" "sed" "grep" "cut")
+REQUIRED_CMDS=("curl" "git" "realpath" "cmp" "just" "tr" "head" "sed" "grep" "cut" "jq")
 MISSING_CMDS=()
 for cmd in "${REQUIRED_CMDS[@]}"; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -31,8 +31,11 @@ done
 
 if [ ${#MISSING_CMDS[@]} -ne 0 ]; then
     echo "[Dependencies] ERROR: The following required commands are missing: ${MISSING_CMDS[*]}"
-    echo "Note: 'realpath' is not installed by default on macOS (can be installed via 'brew install coreutils')."
-    echo "Note: 'just' must be installed manually (https://github.com/casey/just)."
+    echo " "
+    echo "Note: "
+    echo " - 'realpath' is not installed by default on macOS (can be installed via 'brew install coreutils')."
+    echo " - 'jq' is not installed by default, you can install it via your package manager (e.g., 'apt install jq' on Debian/Ubuntu, 'brew install jq' on macOS)."
+    echo " "
     exit 1
 fi
 
