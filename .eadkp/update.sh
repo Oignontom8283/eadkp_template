@@ -39,6 +39,17 @@ if [ ${#MISSING_CMDS[@]} -ne 0 ]; then
     exit 1
 fi
 
+# Verify Rust/Cargo is installed (required to build/update the project)
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "[Dependencies] ERROR: Rust (cargo) is not installed."
+    echo " "
+    echo "Note: "
+    echo " - Rust and Cargo are required to build and update this project."
+    echo " - Install it from the official website: https://www.rust-lang.org/tools/install"
+    echo " "
+    exit 1
+fi
+
 # Safety check to prevent running the script directly from within its folder
 if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
     echo "[Safety] Please run the update script from the root directory of the project."
