@@ -47,14 +47,16 @@ if ! command -v cargo >/dev/null 2>&1; then
     echo -e " "
     echo -e "Note: "
     echo -e " - Rust and Cargo are required to build and update this project."
-    echo -e " - Install it from the official website: ${BLUE}https://www.rust-lang.org/tools/install${RESET}"
+    echo -e " - Install it from the official website: ${CYAN}https://www.rust-lang.org/tools/install${RESET}"
     echo -e " "
     exit 1
 fi
 
 # Safety check to prevent running the script directly from within its folder
 if [[ "$(basename "$PWD")" == "$DIR_NAME" ]]; then
-    echo "[Safety] Please run the update script from the root directory of the project."
+    echo -e " "
+    echo -e "${GREEN}[Safety] Please run the update script from the root directory of the project.${RESET}"
+    echo -e " "
     exit 1
 fi
 
